@@ -3,17 +3,11 @@
 
 namespace SAM {
 
-class Date
+struct Date
 {
- public:
-    Date(int year, int month, int day);
-
-    
-
- private:
-    int year_;
-    int month_;
-    int day_;
+    int year;
+    int month;
+    int day;
 };
 
 }  // namespace SAM

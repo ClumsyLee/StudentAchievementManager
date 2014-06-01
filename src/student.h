@@ -1,10 +1,10 @@
 #ifndef SAM_STUDENT_H_
 #define SAM_STUDENT_H_
 
-#include <cstdint>
 #include <string>
 #include <vector>
-#include "course.h"
+
+#include "common.h"
 
 namespace SAM {
 
@@ -13,31 +13,33 @@ namespace SAM {
 class Student
 {
  public:
-    typedef std::uint_least64_t IDType;
+    typedef BasicStudentInfo::IDType IDType;
 
-    Student(const std::string &name, IDType id, bool is_male);
+    Student() = default;
+    explicit Student(const BasicStudentInfo& basic_info);
 
-    void AddCourse(Course::IDType course_id);
-    bool RemoveCourse(Course::IDType course_id) const;
-    bool InCourse(Course::IDType course_id) const;
+    void AddCourse(BasicCourseInfo::IDType course_id);
+    void RemoveCourse(BasicCourseInfo::IDType course_id);
+    bool InCourse(BasicCourseInfo::IDType course_id) const;
 
     // accessors
-    const std::string & name() const { return name_; }
-    IDType id() const { return id_; }
-    const std::vector<Course::IDType> &courses_taken() const
+    const BasicStudentInfo & basic_info() const { return basic_info_; }
+    const std::vector<BasicCourseInfo::IDType> &courses_taken() const
     { return courses_taken_; }
 
     // mutators
-    Student & set_name(const std::string &name);
-    Student & set_id(IDType id);  // Ought to be unique, so remember to check
-                                  // whether there is a student with a same id,
-                                  // and update the id that courses have
+    // ID is ought to be unique, so remember to check whether there is
+    // a student with a same id, and update the id that courses have
+    void set_basic_info(const BasicStudentInfo &info) { basic_info_ = info; }
 
  private:
-    std::string name_;
-    IDType id_;
-    bool is_male_;
-    std::vector<Course::IDType> courses_taken_;
+    void SortCoursesIfNeeded() const;  // to make it possible to call InCourse
+                                       // on a const object
+
+    BasicStudentInfo basic_info_;
+
+    mutable std::vector<BasicCourseInfo::IDType> courses_taken_;
+    mutable bool courses_is_sorted_;
 };
 
 }  // namespace SAM
