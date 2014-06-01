@@ -9,12 +9,6 @@
 
 namespace SAM {
 
-struct ExamInfo
-{
-    std::string name;
-    Date date;
-};
-
 struct Exam
 {
     typedef double ScoreType;
@@ -25,7 +19,7 @@ struct Exam
               result() {}
 
     BasicCourseInfo::IDType course_id;
-    ExamInfo info;
+    BasicExamInfo info;
 
     std::vector<std::pair<BasicStudentInfo::IDType, ScoreType>> result;
 };

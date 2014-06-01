@@ -63,7 +63,7 @@ class Course
     // accessors
     const BasicCourseInfo & basic_info() const { return basic_info_; }
     std::vector<Student::IDType> StudentList() const;
-    const std::vector<ExamInfo> & exams_info() const { return exams_info_; }
+    const std::vector<BasicExamInfo> & exams_info() const { return exams_info_; }
 
     // mutators
     void set_basic_info(const BasicCourseInfo &info) { basic_info_ = info; }
@@ -85,7 +85,7 @@ class Course
 
     BasicCourseInfo basic_info_;
 
-    std::vector<ExamInfo> exams_info_;
+    std::vector<BasicExamInfo> exams_info_;
     mutable std::vector<StudentInfo> students_info_;
     mutable bool students_is_sorted_;
 };

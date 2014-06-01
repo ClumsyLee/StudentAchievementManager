@@ -29,6 +29,12 @@ struct BasicStudentInfo
     bool is_male;
 };
 
+struct BasicExamInfo
+{
+    std::string name;
+    Date date;
+};
+
 }  // namespace SAM
 
 #endif  // SAM_COMMON_H_
