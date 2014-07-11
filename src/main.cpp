@@ -1,8 +1,8 @@
-#include "text_interface.h"
+#include "command_line_interface.h"
 
 int main(int argc, char *argv[])
 {
-    SAM::TextInterface interface;
+    SAM::CommandLineInterface interface;
 
     return interface.Run(argc, argv);
 }

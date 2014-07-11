@@ -11,17 +11,15 @@ namespace SAM {
 
 struct Exam
 {
-    typedef double ScoreType;
+    typedef ExamInfo::ScoreType ScoreType;
 
-    Exam(BasicCourseInfo::IDType course_id, std::string name, Date date)
-            : course_id(course_id),
-              info{name, date},
+    Exam(CourseInfo::IDType course_id, std::string name, Date date)
+            : info{course_id, name, date},
               result() {}
 
-    BasicCourseInfo::IDType course_id;
-    BasicExamInfo info;
+    ExamInfo info;
 
-    std::vector<std::pair<BasicStudentInfo::IDType, ScoreType>> result;
+    std::vector<std::pair<StudentInfo::IDType, ScoreType>> result;
 };
 
 }  // namespace SAM

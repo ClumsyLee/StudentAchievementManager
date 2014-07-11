@@ -15,30 +15,36 @@ namespace SAM {
 class Manager
 {
  public:
+    typedef std::map<Student::IDType, Student>::const_iterator StudentIterator;
+    typedef std::map<Course::IDType, Course>::const_iterator CourseIterator;
+
+
     Manager();
 
     // ======================= Operations for students =======================
-    bool AddStudent(const BasicStudentInfo &student_info);
+    bool AddStudent(const StudentInfo &student_info);
     bool RemoveStudent(Student::IDType student_id);
     bool HasStudent(Student::IDType student_id) const;
-    const Student * SearchStudent(Student::IDType student_id) const;
+    bool SearchStudent(Student::IDType student_id,
+                       Student &student_found) const;
 
     // IDs that courses have will be updated if needed.
     // If the new ID has been taken, nothing will be changed.
-    bool SetStudentBasicInfo(Student::IDType student_id,
-                             const BasicStudentInfo &info);
+    bool SetStudentInfo(Student::IDType student_id,
+                        const StudentInfo &info);
 
 
     // ======================= Operations for courses =======================
-    bool AddCourse(const BasicCourseInfo &info);
+    bool AddCourse(const CourseInfo &info);
     bool RemoveCourse(Course::IDType course_id);
     bool HasCourse(Course::IDType course_id) const;
-    const Course * SearchCourse(Course::IDType course_id) const;
+    bool SearchCourse(Course::IDType course_id,
+                      Course &course_found) const;
 
     // IDs that courses have will be updated if needed.
     // If the new ID has been taken, nothing will be changed.
-    bool SetCourseBasicInfo(Course::IDType course_id,
-                            const BasicCourseInfo &info);
+    bool SetCourseInfo(Course::IDType course_id,
+                       const CourseInfo &info);
 
 
     // ================== Operations for students & courses ==================
@@ -63,10 +69,14 @@ class Manager
     bool ModifyScore(Student::IDType student_id, Course::IDType course_id,
                      std::size_t exam_index, Exam::ScoreType new_score);
 
+    // accessors
+    StudentIterator student_begin() const { return students_.cbegin(); }
+    StudentIterator student_end() const { return students_.cend(); }
+
+    CourseIterator course_begin() const { return courses_.cbegin(); }
+    CourseIterator course_end() const { return courses_.cend(); }
+
  private:
-    // Here we use sorted vector instead of map or something, because students
-    // and courses are usually added at the beginning, and will stay the same
-    // for the next semester. So a sorted vector will be more efficient.
     std::map<Student::IDType, Student> students_;
     std::map<Course::IDType, Course> courses_;
 };

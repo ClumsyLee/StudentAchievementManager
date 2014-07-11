@@ -7,7 +7,7 @@ Manager::Manager() : students_(),
 {
 }
 
-bool Manager::AddStudent(const BasicStudentInfo &student_info)
+bool Manager::AddStudent(const StudentInfo &student_info)
 {
     if (students_.count(student_info.id) != 0)  // id has been occupied
         return false;
@@ -24,6 +24,7 @@ bool Manager::RemoveStudent(Student::IDType student_id)
 
     for (Course::IDType course_id : iter->second.courses_taken())
     {
+        // Courses are managed by Manager, so this course should exist
         courses_[course_id].RemoveStudent(iter->second);
     }
     students_.erase(iter);
@@ -35,17 +36,19 @@ bool Manager::HasStudent(Student::IDType student_id) const
     return students_.count(student_id) != 0;
 }
 
-const Student * Manager::SearchStudent(Student::IDType student_id) const
+bool Manager::SearchStudent(Student::IDType student_id,
+                            Student &student_found) const
 {
     auto iter = students_.find(student_id);
     if (iter == students_.end())
-        return nullptr;
-    else
-        return &(iter->second);
+        return false;
+
+    student_found = iter->second;
+    return true;
 }
 
-bool Manager::SetStudentBasicInfo(Student::IDType student_id,
-                                  const BasicStudentInfo &info)
+bool Manager::SetStudentInfo(Student::IDType student_id,
+                             const StudentInfo &info)
 {
     auto iter = students_.find(student_id);
     if (iter == students_.end())
@@ -69,7 +72,7 @@ bool Manager::SetStudentBasicInfo(Student::IDType student_id,
                  exam_index++)
             {
                 courses_[course_id].ModifyScore(info.id,
-                                                scores_before[exam_index],
+                                                exam_index,
                                                 scores_before[exam_index]);
             }
         }
@@ -77,17 +80,17 @@ bool Manager::SetStudentBasicInfo(Student::IDType student_id,
         students_.erase(iter);
         students_.emplace(info.id, new_student);
     }
-    else
+    else  // id stay the same
     {
-        iter->second.set_basic_info(info);
+        iter->second.set_info(info);
     }
 
     return true;
 }
 
-bool Manager::AddCourse(const BasicCourseInfo &info)
+bool Manager::AddCourse(const CourseInfo &info)
 {
-    if (students_.count(info.id) != 0)  // id has been occupied
+    if (courses_.count(info.id) != 0)  // id has been occupied
         return false;
 
     courses_.emplace(info.id, Course(info));
@@ -112,29 +115,31 @@ bool Manager::HasCourse(Course::IDType course_id) const
     return courses_.count(course_id) != 0;
 }
 
-const Course * Manager::SearchCourse(Course::IDType course_id) const
-{
-    auto iter = courses_.find(course_id);
-    if (iter == courses_.end())
-        return nullptr;
-
-    return &(iter->second);
-}
-
-bool Manager::SetCourseBasicInfo(Course::IDType course_id,
-                                 const BasicCourseInfo &info)
+bool Manager::SearchCourse(Course::IDType course_id,
+                           Course &course_found) const
 {
     auto iter = courses_.find(course_id);
     if (iter == courses_.end())
         return false;
 
-    if (course_id != info.id)
+    course_found = iter->second;
+    return true;
+}
+
+bool Manager::SetCourseInfo(Course::IDType course_id,
+                            const CourseInfo &info)
+{
+    auto iter = courses_.find(course_id);
+    if (iter == courses_.end())
+        return false;
+
+    if (course_id != info.id)  // the id has changed
     {
         if (courses_.count(info.id) != 0)
             return false;  // new id has been taken
 
         Course new_course(iter->second);
-        new_course.set_basic_info(info);
+        new_course.set_info(info);
         // updating IDs
         for (auto student_id : new_course.StudentList())
         {
@@ -145,9 +150,9 @@ bool Manager::SetCourseBasicInfo(Course::IDType course_id,
         courses_.erase(iter);
         courses_.emplace(info.id, new_course);
     }
-    else
+    else  // the id stay the same
     {
-        iter->second.set_basic_info(info);
+        iter->second.set_info(info);
     }
 
     return true;
@@ -207,7 +212,7 @@ bool Manager::RemoveStudentFromCourse(Student::IDType student_id,
 bool Manager::AddExam(const Exam &exam,
                       std::vector<Student::IDType> &unscored_students)
 {
-    auto iter = courses_.find(exam.course_id);
+    auto iter = courses_.find(exam.info.course_id);
     if (iter == courses_.end())
         return false;
 

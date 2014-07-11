@@ -7,12 +7,12 @@
 
 namespace SAM {
 
-struct BasicCourseInfo
+struct CourseInfo
 {
-    typedef std::uint_least64_t IDType;
+    typedef std::string IDType;  // allow course ID to have letters
 
-    std::string name;
     IDType id;
+    std::string name;
 
     Date begin_date;
     Date end_date;
@@ -20,17 +20,20 @@ struct BasicCourseInfo
     std::string teacher_name;
 };
 
-struct BasicStudentInfo
+struct StudentInfo
 {
     typedef std::uint_least64_t IDType;
 
-    std::string name;
     IDType id;
+    std::string name;
     bool is_male;
 };
 
-struct BasicExamInfo
+struct ExamInfo
 {
+    typedef double ScoreType;
+
+    CourseInfo::IDType course_id;
     std::string name;
     Date date;
 };

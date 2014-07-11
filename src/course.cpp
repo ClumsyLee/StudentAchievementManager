@@ -3,21 +3,18 @@
 
 namespace SAM {
 
-Course::Course(const BasicCourseInfo &basic_info)
-        : basic_info_(basic_info),
+Course::Course(const CourseInfo &info)
+        : info_(info),
           exams_info_(),
-          students_info_(),
-          students_is_sorted_(true)
+          students_info_()
 {
 }
 
 void Course::AddExam(const Exam &exam_result,
                      std::vector<Student::IDType> &unscored_students)
 {
-    if (exam_result.course_id != basic_info_.id)
+    if (exam_result.info.course_id != info_.id)  // not for this course
         return;
-
-    SortStudentsIfNeeded();
 
     exams_info_.push_back(exam_result.info);  // record exam info
 
@@ -62,21 +59,28 @@ bool Course::RemoveExam(std::size_t exam_index)
 
 void Course::AddStudent(Student &student)
 {
-    student.AddCourse(basic_info_.id);
-    students_info_.push_back(
-            StudentInfo{student.basic_info().id,
+    student.AddCourse(info_.id);
+
+    auto range_pair = std::equal_range(students_info_.begin(),
+                                       students_info_.end(),
+                                       StudentInfo{student.info().id, {}});
+    if (range_pair.first != range_pair.second)  // already has this student
+        return;
+
+    students_info_.insert(
+            range_pair.first,
+            StudentInfo{student.info().id,
                         std::vector<Exam::ScoreType>(exams_info_.size(), 0)});
-    students_is_sorted_ = false;
 }
 
 void Course::RemoveStudent(Student &student)
 {
-    student.RemoveCourse(basic_info_.id);
-    students_info_.erase(std::remove(students_info_.begin(),
-                                     students_info_.end(),
-                                     StudentInfo{student.basic_info().id, {}}),
-                         students_info_.end());
-    // The sorting state remain the same.
+    student.RemoveCourse(info_.id);
+
+    auto range_pair = std::equal_range(students_info_.begin(),
+                                       students_info_.end(),
+                                       StudentInfo{student.info().id, {}});
+    students_info_.erase(range_pair.first, range_pair.second);
 }
 
 bool Course::HasStudent(Student::IDType student_id) const
@@ -88,34 +92,29 @@ Exam::ScoreType Course::LookUpScore(Student::IDType student_id,
                                     std::size_t exam_index) const
 {
     const StudentInfo * p_student = FindStudent(student_id);
+
     if (p_student == nullptr || exam_index >= exams_info_.size())
-    {
         return 0;  // invalid arguments
-    }
     else
-    {
         return p_student->scores[exam_index];
-    }
 }
 
 std::vector<Exam::ScoreType>
 Course::LookUpScore(Student::IDType student_id) const
 {
     const StudentInfo * p_student = FindStudent(student_id);
+
     if (p_student == nullptr)
-    {
         return std::vector<Exam::ScoreType>();  // student not found
-    }
     else
-    {
         return p_student->scores;
-    }
 }
 
 bool Course::ModifyScore(Student::IDType student_id, std::size_t exam_index,
                          Exam::ScoreType new_score)
 {
     StudentInfo *p_student = FindStudent(student_id);
+
     if (p_student != nullptr && exam_index < exams_info_.size())
     {
         p_student->scores[exam_index] = new_score;
@@ -135,29 +134,9 @@ std::vector<Student::IDType> Course::StudentList() const
 }
 
 
-
-void Course::SortStudentsIfNeeded() const
+const Course::StudentInfo *
+Course::FindStudent(Student::IDType student_id) const
 {
-    if (!students_is_sorted_)
-    {
-        // sort students by their ids.
-        // we use stable sort to ensure that, if a student has been added
-        // to this course twise, only scores of earlier one will be kept.
-        std::stable_sort(students_info_.begin(), students_info_.end());
-
-        students_info_.erase(
-                std::unique(students_info_.begin(),
-                            students_info_.end()),
-                students_info_.end());  // remove students with the same id.
-
-        students_is_sorted_ = true;
-    }
-}
-
-Course::StudentInfo * Course::FindStudent(Student::IDType student_id) const
-{
-    SortStudentsIfNeeded();
-
     auto range_pair = std::equal_range(students_info_.begin(),
                                        students_info_.end(),
                                        StudentInfo{student_id, {}});
