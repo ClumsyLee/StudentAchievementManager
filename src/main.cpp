@@ -1,8 +1,10 @@
+#include <memory>
+
 #include "command_line_interface.h"
 
 int main(int argc, char *argv[])
 {
-    SAM::CommandLineInterface interface;
+    std::unique_ptr<SAM::Interface> interface(new SAM::CommandLineInterface);
 
-    return interface.Run(argc, argv);
+    return interface->Run(argc, argv);
 }

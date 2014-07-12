@@ -1,11 +1,11 @@
 CXX = g++
-CXXFLAGS = -c -std=c++11 -O2 -Wall -Wextra
+CXXFLAGS = -c -std=c++11 -Wall -Wextra
 MKDIR = mkdir
 
 OBJS = obj/course.o obj/student.o obj/manager.o obj/main.o obj/command_line_interface.o
 
 bin/SAM: $(OBJS) | bin
-	$(CXX) -o $@ $^ -lncurses
+	$(CXX) -o $@ $^ # -lncurses
 
 obj/course.o: src/course.cpp src/course.h| obj
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -38,3 +38,6 @@ obj:
 
 bin:
 	$(MKDIR) $@
+
+clean:
+	-rm obj/*.o

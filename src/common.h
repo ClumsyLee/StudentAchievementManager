@@ -13,6 +13,7 @@ struct CourseInfo
 
     IDType id;
     std::string name;
+    int credit;
 
     Date begin_date;
     Date end_date;
