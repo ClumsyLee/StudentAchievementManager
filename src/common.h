@@ -3,15 +3,10 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace SAM {
-
-struct Date
-{
-    int year;
-    int month;
-    int day;
-};
 
 struct CourseInfo
 {
@@ -33,14 +28,15 @@ struct StudentInfo
     bool is_male;
 };
 
-struct ExamInfo
-{
-    typedef double ScoreType;
+typedef float ScoreType;
+const ScoreType kInvalidScore = -1.0f;
 
-    CourseInfo::IDType course_id;
-    std::string name;
-    Date date;
+struct ScorePiece
+{
+    StudentInfo::IDType id;
+    ScoreType score;
 };
+typedef std::vector<ScorePiece> FinalScore;
 
 }  // namespace SAM
 

@@ -1,149 +1,92 @@
 #include <algorithm>
+#include <iterator>
 #include "course.h"
 
 namespace SAM {
 
 Course::Course(const CourseInfo &info)
         : info_(info),
-          exams_info_(),
-          students_info_()
+          final_score_(),
+          has_final_score_(false)
 {
 }
 
-void Course::AddExam(const Exam &exam_result,
-                     std::vector<Student::IDType> &unscored_students)
+void Course::RecordFinalScore(const FinalScore &final_score,
+                              std::vector<Student::IDType> &unscored_students)
 {
-    if (exam_result.info.course_id != info_.id)  // not for this course
-        return;
-
-    exams_info_.push_back(exam_result.info);  // record exam info
-
-    std::vector<bool> score_taken(students_info_.size(), false);
-    for (const auto &result : exam_result.result)
+    for (const auto &score_piece : final_score)
     {
-        StudentInfo *p_student = FindStudent(result.first);
-        if (p_student != nullptr)  // found
+        ChangeScore(score_piece.id, score_piece.score);
+    }
+
+    for (const auto &score_piece : final_score_)
+    {
+        if (score_piece.score == kInvalidScore)
         {
-            std::size_t index = p_student - &students_info_[0];
-            if (score_taken[index] == false)  // haven't record for this student
-            {
-                p_student->scores.push_back(result.second);
-                score_taken[index] = true;
-            }
+            // no score given
+            unscored_students.push_back(score_piece.id);
         }
     }
 
-    for (std::size_t index = 0; index < students_info_.size(); index++)
-    {
-        if (score_taken[index] == false)
-        {
-            // no score given, push a zero
-            students_info_[index].scores.push_back(0);
-            unscored_students.push_back(students_info_[index].id);
-        }
-    }
+    has_final_score_ = true;
 }
 
-bool Course::RemoveExam(std::size_t exam_index)
+void Course::RemoveFinalScore()
 {
-    if (exam_index >= exams_info_.size())
-        return false;  // invalid exam index
+    for (auto &score_piece : final_score_)
+        score_piece.score = kInvalidScore;
 
-    exams_info_.erase(exams_info_.begin() + exam_index);  // erase exam info
-    for (StudentInfo &info : students_info_)  // erase scores
-    {
-        info.scores.erase(info.scores.begin() + exam_index);
-    }
-    return true;
+    has_final_score_ = false;
 }
 
 void Course::AddStudent(Student &student)
 {
     student.AddCourse(info_.id);
 
-    auto range_pair = std::equal_range(students_info_.begin(),
-                                       students_info_.end(),
-                                       StudentInfo{student.info().id, {}});
-    if (range_pair.first != range_pair.second)  // already has this student
-        return;
-
-    students_info_.insert(
-            range_pair.first,
-            StudentInfo{student.info().id,
-                        std::vector<Exam::ScoreType>(exams_info_.size(), 0)});
+    auto student_id = student.info().id;
+    auto range_pair = EqualRange(student_id);
+    if (range_pair.first == range_pair.second)  // have not record this student
+    {
+        final_score_.insert(range_pair.first,
+                            ScorePiece{student_id, kInvalidScore});
+    }
 }
 
 void Course::RemoveStudent(Student &student)
 {
     student.RemoveCourse(info_.id);
 
-    auto range_pair = std::equal_range(students_info_.begin(),
-                                       students_info_.end(),
-                                       StudentInfo{student.info().id, {}});
-    students_info_.erase(range_pair.first, range_pair.second);
+    auto range_pair = EqualRange(student.info().id);
+    final_score_.erase(range_pair.first, range_pair.second);
 }
 
 bool Course::HasStudent(Student::IDType student_id) const
 {
-    return FindStudent(student_id) != nullptr;
+    auto range_pair = EqualRange(student_id);
+    return range_pair.first != range_pair.second;
 }
 
-Exam::ScoreType Course::LookUpScore(Student::IDType student_id,
-                                    std::size_t exam_index) const
+ScoreType Course::LookUpScore(Student::IDType student_id) const
 {
-    const StudentInfo * p_student = FindStudent(student_id);
+    auto range_pair = EqualRange(student_id);
 
-    if (p_student == nullptr || exam_index >= exams_info_.size())
-        return 0;  // invalid arguments
+    if (range_pair.first == range_pair.second)
+        return kInvalidScore;  // invalid student_id
     else
-        return p_student->scores[exam_index];
+        return range_pair.first->score;
 }
 
-std::vector<Exam::ScoreType>
-Course::LookUpScore(Student::IDType student_id) const
+bool Course::ChangeScore(Student::IDType student_id, ScoreType new_score)
 {
-    const StudentInfo * p_student = FindStudent(student_id);
+    auto range_pair = EqualRange(student_id);
 
-    if (p_student == nullptr)
-        return std::vector<Exam::ScoreType>();  // student not found
-    else
-        return p_student->scores;
-}
-
-bool Course::ModifyScore(Student::IDType student_id, std::size_t exam_index,
-                         Exam::ScoreType new_score)
-{
-    StudentInfo *p_student = FindStudent(student_id);
-
-    if (p_student != nullptr && exam_index < exams_info_.size())
+    if (range_pair.first != range_pair.second)
     {
-        p_student->scores[exam_index] = new_score;
+        range_pair.first->score = new_score;
         return true;
     }
+
     return false;
-}
-
-std::vector<Student::IDType> Course::StudentList() const
-{
-    std::vector<Student::IDType> student_list;
-    for (const StudentInfo &info : students_info_)
-    {
-        student_list.push_back(info.id);
-    }
-    return student_list;
-}
-
-
-const Course::StudentInfo *
-Course::FindStudent(Student::IDType student_id) const
-{
-    auto range_pair = std::equal_range(students_info_.begin(),
-                                       students_info_.end(),
-                                       StudentInfo{student_id, {}});
-    if (range_pair.first != range_pair.second)  // found
-        return &(*range_pair.first);
-    else
-        return nullptr;
 }
 
 }  // namespace SAM
