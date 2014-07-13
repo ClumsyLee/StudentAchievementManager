@@ -1,6 +1,7 @@
 #ifndef SAM_MANAGER_H_
 #define SAM_MANAGER_H_
 
+#include <iterator>
 #include <map>
 #include <string>
 #include <vector>
@@ -15,9 +16,53 @@ namespace SAM {
 class Manager
 {
  public:
-    typedef std::map<Student::IDType, Student>::const_iterator StudentIterator;
-    typedef std::map<Course::IDType, Course>::const_iterator CourseIterator;
+    template <typename KeyType, typename ItemType>
+    class MapItemIterator
+            : public std::iterator<std::bidirectional_iterator_tag, ItemType>
+    {
+     private:
+        typedef typename std::map<KeyType, ItemType>::const_iterator MapIter;
 
+     public:
+        explicit MapItemIterator(MapIter map_iter) : map_iter_(map_iter) {}
+
+        bool operator==(const MapItemIterator &rhs)
+        { return map_iter_ == rhs.map_iter_; }
+
+        bool operator!=(const MapItemIterator &rhs)
+        { return map_iter_ != rhs.map_iter_; }
+
+        const ItemType & operator*() { return map_iter_->second; }
+        const ItemType * operator->() { return &(map_iter_->second); }
+
+        MapItemIterator & operator++()
+        {
+            ++map_iter_;
+            return *this;
+        }
+
+        MapItemIterator operator++(int)
+        {
+            return MapItemIterator(map_iter_++);
+        }
+
+        MapItemIterator & operator--()
+        {
+            --map_iter_;
+            return *this;
+        }
+
+        MapItemIterator operator--(int)
+        {
+            return MapItemIterator(map_iter_--);
+        }
+
+     private:
+        MapIter map_iter_;
+    };
+
+    typedef MapItemIterator<Student::IDType, Student> StudentIterator;
+    typedef MapItemIterator<Course::IDType, Course> CourseIterator;
 
     Manager();
 
