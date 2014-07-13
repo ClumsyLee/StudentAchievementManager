@@ -111,6 +111,7 @@ bool Manager::RemoveCourse(Course::IDType course_id)
     {
         students_[student_id].RemoveCourse(course_id);
     }
+    courses_.erase(iter);
     return true;
 }
 
