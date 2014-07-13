@@ -96,30 +96,37 @@ class Manager
     bool AddStudentToCourse(Student::IDType student_id,
                             Course::IDType course_id);
     bool AddStudentToCourse(const std::vector<Student::IDType> &student_ids,
-                             Course::IDType course_id);
+                            Course::IDType course_id);
     bool RemoveStudentFromCourse(Student::IDType student_id,
                                  Course::IDType course_id);
 
     // ======================== Operations for exams ========================
-    // Add an exam result to the record.
+    // Record final scores.
     // If the course_id do not match, the function will do nothing.
-    // If a student cannot be found in the result, his ID will be added to
-    // the back of unscored_students, and his grade will be set to 0.
-    bool AddExam(const Exam &exam,
-                 std::vector<Student::IDType> &unscored_students);
-    // Remove a certain exam from the course
-    // If the index is invalid, nothing will be done
-    bool RemoveExam(Course::IDType course_id, std::size_t exam_index);
+    // If a student is unscored after update, his ID will be added to the back
+    // of unscored_students.
+    // If a student has more than one score, the last one will be taken
+    bool RecordFinalScore(const Course::IDType &course_id,
+                          const FinalScore &final_score,
+                          std::vector<Student::IDType> &unscored_students);
+    void RemoveFinalScore(const Course::IDType &course_id);
 
-    bool ModifyScore(Student::IDType student_id, Course::IDType course_id,
-                     std::size_t exam_index, Exam::ScoreType new_score);
+    bool ChangeScore(Student::IDType student_id,
+                     const Course::IDType &course_id,
+                     ScoreType new_score);
 
     // accessors
-    StudentIterator student_begin() const { return students_.cbegin(); }
-    StudentIterator student_end() const { return students_.cend(); }
+    StudentIterator student_begin() const
+    { return StudentIterator(students_.cbegin()); }
 
-    CourseIterator course_begin() const { return courses_.cbegin(); }
-    CourseIterator course_end() const { return courses_.cend(); }
+    StudentIterator student_end() const
+    { return StudentIterator(students_.cend()); }
+
+    CourseIterator course_begin() const
+    { return CourseIterator(courses_.cbegin()); }
+
+    CourseIterator course_end() const
+    { return CourseIterator(courses_.cend()); }
 
  private:
     std::map<Student::IDType, Student> students_;

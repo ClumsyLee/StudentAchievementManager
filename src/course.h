@@ -22,13 +22,6 @@ class Course
     Course() = default;
     explicit Course(const CourseInfo &info);
 
-    // If a student is unscored after update, his ID will be added to the back
-    // of unscored_students.
-    // If a student has more than one score, the last one will be taken
-    void RecordFinalScore(const FinalScore &final_score,
-                          std::vector<Student::IDType> &unscored_students);
-    void RemoveFinalScore();
-
     // The course-taking information will be updated after calling these.
     void AddStudent(Student &student);
     void RemoveStudent(Student &student);
@@ -37,6 +30,13 @@ class Course
     bool HasStudent(const Student &student) const
     { return HasStudent(student.info().id); }
 
+    // If a student is unscored after update, his ID will be added to the back
+    // of unscored_students.
+    // If a student has more than one score, the last one will be taken
+    void RecordFinalScore(const FinalScore &final_score,
+                          std::vector<Student::IDType> &unscored_students);
+    void RemoveFinalScore();
+
     // If the student is not in this course, kInvalidScore will be returned.
     ScoreType LookUpScore(Student::IDType student_id) const;
     ScoreType LookUpScore(const Student &student) const
@@ -44,7 +44,6 @@ class Course
 
     // If the arguments are invalid, nothing will be done
     bool ChangeScore(Student::IDType student_id, ScoreType new_score);
-
 
     // accessors
     const CourseInfo & info() const { return info_; }

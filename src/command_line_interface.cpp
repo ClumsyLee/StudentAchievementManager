@@ -25,7 +25,6 @@ CommandLineInterface::CommandLineInterface()
 {
 }
 
-
 int CommandLineInterface::Run(int argc, const char* const argv[])
 {
     std::string command;

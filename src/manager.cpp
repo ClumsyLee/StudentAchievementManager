@@ -66,17 +66,14 @@ bool Manager::SetStudentInfo(Student::IDType student_id,
         for (Course::IDType course_id : courses_taken)
         {
             // save scores
-            auto scores_before = courses_[course_id].LookUpScore(student_id);
+            auto score_before = courses_[course_id].LookUpScore(student_id);
+
             courses_[course_id].RemoveStudent(iter->second);
             courses_[course_id].AddStudent(new_student);
+
             // recover scores
-            for (std::size_t exam_index = 0; exam_index < scores_before.size();
-                 exam_index++)
-            {
-                courses_[course_id].ModifyScore(info.id,
-                                                exam_index,
-                                                scores_before[exam_index]);
-            }
+            courses_[course_id].ChangeScore(info.id,
+                                            score_before);
         }
 
         students_.erase(iter);
@@ -105,10 +102,10 @@ bool Manager::RemoveCourse(Course::IDType course_id)
     if (iter == courses_.end())  // course not found
         return false;
 
-    auto student_list = iter->second.StudentList();
-    for (Student::IDType student_id : student_list)
+    auto final_score = iter->second.final_score();
+    for (ScorePiece score_piece : final_score)
     {
-        students_[student_id].RemoveCourse(course_id);
+        students_[score_piece.id].RemoveCourse(course_id);
     }
     courses_.erase(iter);
     return true;
@@ -145,11 +142,10 @@ bool Manager::SetCourseInfo(Course::IDType course_id,
         Course new_course(iter->second);
         new_course.set_info(info);
         // updating IDs
-        auto student_list = new_course.StudentList();
-        for (auto student_id : student_list)
+        for (ScorePiece score_piece : new_course.final_score())
         {
-            students_[student_id].RemoveCourse(course_id);
-            students_[student_id].AddCourse(info.id);
+            students_[score_piece.id].RemoveCourse(course_id);
+            students_[score_piece.id].AddCourse(info.id);
         }
 
         courses_.erase(iter);
@@ -214,36 +210,35 @@ bool Manager::RemoveStudentFromCourse(Student::IDType student_id,
     return true;
 }
 
-bool Manager::AddExam(const Exam &exam,
-                      std::vector<Student::IDType> &unscored_students)
+bool Manager::RecordFinalScore(const Course::IDType &course_id,
+                               const FinalScore &final_score,
+                               std::vector<Student::IDType> &unscored_students)
 {
-    auto iter = courses_.find(exam.info.course_id);
+    auto iter = courses_.find(course_id);
     if (iter == courses_.end())
         return false;
 
-    iter->second.AddExam(exam, unscored_students);
+    iter->second.RecordFinalScore(final_score, unscored_students);
     return true;
 }
 
-bool Manager::RemoveExam(Course::IDType course_id, std::size_t exam_index)
+void Manager::RemoveFinalScore(const Course::IDType &course_id)
+{
+    auto iter = courses_.find(course_id);
+
+    if (iter != courses_.end())
+        iter->second.RemoveFinalScore();
+}
+
+bool Manager::ChangeScore(Student::IDType student_id,
+                          const Course::IDType &course_id,
+                          ScoreType new_score)
 {
     auto iter = courses_.find(course_id);
     if (iter == courses_.end())
         return false;
 
-    return iter->second.RemoveExam(exam_index);
+    return iter->second.ChangeScore(student_id, new_score);
 }
-
-bool Manager::ModifyScore(Student::IDType student_id, Course::IDType course_id,
-                          std::size_t exam_index, Exam::ScoreType new_score)
-{
-    auto iter = courses_.find(course_id);
-    if (iter == courses_.end())
-        return false;
-
-    return iter->second.ModifyScore(student_id, exam_index, new_score);
-}
-
-
 
 }  // namespace SAM
