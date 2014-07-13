@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "date.h"
 #include "common.h"
 
 namespace SAM {

@@ -20,7 +20,7 @@ CommandLineInterface::CommandLineInterface()
               {"register", &CommandLineInterface::RegisterToCourse},
               {"drop", &CommandLineInterface::DropFromCourse}
           },
-          prompt_("SAM: "),
+          prompt_("SAM-0.1: "),
           manager_()
 {
 }
@@ -37,6 +37,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
             return 0;
         std::cout << prompt_;
     }
+
+    std::cout << std::endl;
+
     return 0;
 }
 
@@ -120,11 +123,12 @@ void CommandLineInterface::ShowStudent(const std::string &command)
             std::cout << "Course taken:\n";
 
             Course course;
-            for (const Course::IDType &course_id : student.courses_taken())
+            auto courses_taken = student.courses_taken();
+            for (const Course::IDType &course_id : courses_taken)
             {
                 if (!manager_.SearchCourse(course_id, course))
                 {
-                    std::cout << "ERROR: Failed to find a course that should"
+                    std::cout << "ERROR: Failed to find a course that should "
                                  "exist\n"
                                  "Student ID: " << id << "\n"
                                  "Course fail: " << course_id << "\n"
@@ -211,11 +215,12 @@ void CommandLineInterface::ShowCourse(const std::string &command)
             std::cout << "Student(s) in this course:\n";
 
             Student student;
-            for (const Student::IDType &student_id : course.StudentList())
+            auto student_list = course.StudentList();
+            for (const Student::IDType &student_id : student_list)
             {
                 if (!manager_.SearchStudent(student_id, student))
                 {
-                    std::cout << "ERROR: Failed to find a student that should"
+                    std::cout << "ERROR: Failed to find a student that should "
                                  "exist\n"
                                  "Course ID: " << id << "\n"
                                  "Student fail: " << student_id << "\n"

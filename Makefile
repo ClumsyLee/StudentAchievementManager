@@ -28,8 +28,7 @@ obj/command_line_interface.o: src/command_line_interface.cpp src/command_line_in
 src/student.h: src/common.h
 src/course.h: src/common.h src/exam.h src/student.h
 src/manager.h: src/student.h src/course.h
-src/common.h: src/date.h
-src/exam.h: src/date.h src/common.h
+src/exam.h: src/common.h
 # src/text_interface.h: src/interface.h
 src/command_line_interface.h: src/interface.h src/manager.h
 

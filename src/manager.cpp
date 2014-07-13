@@ -1,3 +1,4 @@
+#include <iostream>
 #include "manager.h"
 
 namespace SAM {
@@ -22,7 +23,8 @@ bool Manager::RemoveStudent(Student::IDType student_id)
     if (iter == students_.end())  // student not exist
         return false;
 
-    for (Course::IDType course_id : iter->second.courses_taken())
+    auto  courses_taken = iter->second.courses_taken();
+    for (Course::IDType course_id : courses_taken)
     {
         // Courses are managed by Manager, so this course should exist
         courses_[course_id].RemoveStudent(iter->second);
@@ -61,7 +63,8 @@ bool Manager::SetStudentInfo(Student::IDType student_id,
 
         Student new_student(info);
         // updating IDs
-        for (Course::IDType course_id : iter->second.courses_taken())
+        auto courses_taken = iter->second.courses_taken();
+        for (Course::IDType course_id : courses_taken)
         {
             // save scores
             auto scores_before = courses_[course_id].LookUpScore(student_id);
@@ -103,7 +106,8 @@ bool Manager::RemoveCourse(Course::IDType course_id)
     if (iter == courses_.end())  // course not found
         return false;
 
-    for (Student::IDType student_id : iter->second.StudentList())
+    auto student_list = iter->second.StudentList();
+    for (Student::IDType student_id : student_list)
     {
         students_[student_id].RemoveCourse(course_id);
     }
@@ -141,7 +145,8 @@ bool Manager::SetCourseInfo(Course::IDType course_id,
         Course new_course(iter->second);
         new_course.set_info(info);
         // updating IDs
-        for (auto student_id : new_course.StudentList())
+        auto student_list = new_course.StudentList();
+        for (auto student_id : student_list)
         {
             students_[student_id].RemoveCourse(course_id);
             students_[student_id].AddCourse(info.id);

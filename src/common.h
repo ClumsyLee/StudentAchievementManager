@@ -3,9 +3,15 @@
 
 #include <cstdint>
 #include <string>
-#include "date.h"
 
 namespace SAM {
+
+struct Date
+{
+    int year;
+    int month;
+    int day;
+};
 
 struct CourseInfo
 {
@@ -14,9 +20,6 @@ struct CourseInfo
     IDType id;
     std::string name;
     int credit;
-
-    Date begin_date;
-    Date end_date;
 
     std::string teacher_name;
 };
