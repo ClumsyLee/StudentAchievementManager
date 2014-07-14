@@ -23,7 +23,8 @@ class Course
     explicit Course(const CourseInfo &info);
 
     // The course-taking information will be updated after calling these.
-    void AddStudent(Student &student);
+    // Cannot add if the course if full
+    bool AddStudent(Student &student);
     void RemoveStudent(Student &student);
     // Check whether a certain student is in the course.
     bool HasStudent(Student::IDType student_id) const;
@@ -45,10 +46,11 @@ class Course
     // If the arguments are invalid, nothing will be done
     bool ChangeScore(Student::IDType student_id, ScoreType new_score);
 
+    bool IsFull() const { return final_score_.size() == info_.capacity; }
+
     // accessors
     const CourseInfo & info() const { return info_; }
     const FinalScore & final_score() const { return final_score_; }
-    bool has_final_score() const { return has_final_score_; }
     // to get a student list, use final_score()
 
     // mutators
@@ -80,7 +82,6 @@ class Course
     CourseInfo info_;
 
     FinalScore final_score_;  // always sorted
-    bool has_final_score_;
 };
 
 }  // namespace SAM

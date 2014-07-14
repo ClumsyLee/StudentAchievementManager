@@ -12,7 +12,7 @@
 namespace SAM {
 
 // Manage students and courses.
-// Every student/course should has a unique id.
+// Every student/course should has an unique id.
 class Manager
 {
  public:
@@ -70,8 +70,7 @@ class Manager
     bool AddStudent(const StudentInfo &student_info);
     bool RemoveStudent(Student::IDType student_id);
     bool HasStudent(Student::IDType student_id) const;
-    bool SearchStudent(Student::IDType student_id,
-                       Student &student_found) const;
+    StudentIterator FindStudent(Student::IDType student_id) const;
 
     // IDs that courses have will be updated if needed.
     // If the new ID has been taken, nothing will be changed.
@@ -83,8 +82,7 @@ class Manager
     bool AddCourse(const CourseInfo &info);
     bool RemoveCourse(Course::IDType course_id);
     bool HasCourse(Course::IDType course_id) const;
-    bool SearchCourse(Course::IDType course_id,
-                      Course &course_found) const;
+    CourseIterator FindCourse(Course::IDType course_id) const;
 
     // IDs that courses have will be updated if needed.
     // If the new ID has been taken, nothing will be changed.
@@ -100,7 +98,7 @@ class Manager
     bool RemoveStudentFromCourse(Student::IDType student_id,
                                  Course::IDType course_id);
 
-    // ======================== Operations for exams ========================
+    // ===================== Operations for final score =====================
     // Record final scores.
     // If the course_id do not match, the function will do nothing.
     // If a student is unscored after update, his ID will be added to the back

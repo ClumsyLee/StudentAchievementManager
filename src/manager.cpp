@@ -37,15 +37,9 @@ bool Manager::HasStudent(Student::IDType student_id) const
     return students_.count(student_id) != 0;
 }
 
-bool Manager::SearchStudent(Student::IDType student_id,
-                            Student &student_found) const
+Manager::StudentIterator Manager::FindStudent(Student::IDType student_id) const
 {
-    auto iter = students_.find(student_id);
-    if (iter == students_.end())
-        return false;
-
-    student_found = iter->second;
-    return true;
+    return StudentIterator(students_.find(student_id));
 }
 
 bool Manager::SetStudentInfo(Student::IDType student_id,
@@ -116,15 +110,9 @@ bool Manager::HasCourse(Course::IDType course_id) const
     return courses_.count(course_id) != 0;
 }
 
-bool Manager::SearchCourse(Course::IDType course_id,
-                           Course &course_found) const
+Manager::CourseIterator Manager::FindCourse(Course::IDType course_id) const
 {
-    auto iter = courses_.find(course_id);
-    if (iter == courses_.end())
-        return false;
-
-    course_found = iter->second;
-    return true;
+    return CourseIterator(courses_.find(course_id));
 }
 
 bool Manager::SetCourseInfo(Course::IDType course_id,
@@ -169,8 +157,7 @@ bool Manager::AddStudentToCourse(Student::IDType student_id,
         iter_course == courses_.end())
         return false;
 
-    iter_course->second.AddStudent(iter_student->second);
-    return true;
+    return iter_course->second.AddStudent(iter_student->second);
 }
 
 bool Manager::AddStudentToCourse(
@@ -182,18 +169,18 @@ bool Manager::AddStudentToCourse(
     if (iter_course == courses_.end())
         return false;
 
-    bool at_least_one_student_id_is_valid = false;
+    bool added_at_least_one = false;
     for (auto student_id : student_ids)
     {
         auto iter_student = students_.find(student_id);
         if (iter_student != students_.end())
         {
-            iter_course->second.AddStudent(iter_student->second);
-            at_least_one_student_id_is_valid = true;
+            if (iter_course->second.AddStudent(iter_student->second))
+                added_at_least_one = true;
         }
     }
 
-    return at_least_one_student_id_is_valid;
+    return added_at_least_one;
 }
 
 bool Manager::RemoveStudentFromCourse(Student::IDType student_id,

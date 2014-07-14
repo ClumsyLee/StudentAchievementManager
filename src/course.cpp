@@ -6,8 +6,7 @@ namespace SAM {
 
 Course::Course(const CourseInfo &info)
         : info_(info),
-          final_score_(),
-          has_final_score_(false)
+          final_score_()
 {
 }
 
@@ -27,20 +26,19 @@ void Course::RecordFinalScore(const FinalScore &final_score,
             unscored_students.push_back(score_piece.id);
         }
     }
-
-    has_final_score_ = true;
 }
 
 void Course::RemoveFinalScore()
 {
     for (auto &score_piece : final_score_)
         score_piece.score = kInvalidScore;
-
-    has_final_score_ = false;
 }
 
-void Course::AddStudent(Student &student)
+bool Course::AddStudent(Student &student)
 {
+    if (IsFull())
+        return false;
+
     student.AddCourse(info_.id);
 
     auto student_id = student.info().id;
@@ -50,6 +48,8 @@ void Course::AddStudent(Student &student)
         final_score_.insert(range_pair.first,
                             ScorePiece{student_id, kInvalidScore});
     }
+
+    return true;
 }
 
 void Course::RemoveStudent(Student &student)
