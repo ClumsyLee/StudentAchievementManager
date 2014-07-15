@@ -100,14 +100,19 @@ class Manager
 
     // ===================== Operations for final score =====================
     // Record final scores.
-    // If the course_id do not match, the function will do nothing.
     // If a student is unscored after update, his ID will be added to the back
     // of unscored_students.
     // If a student has more than one score, the last one will be taken
     bool RecordFinalScore(const Course::IDType &course_id,
                           const FinalScore &final_score,
                           std::vector<Student::IDType> &unscored_students);
+
+    // Set all the scores to kInvalidScore
     void RemoveFinalScore(const Course::IDType &course_id);
+
+    // If the arguments are invalid, kInvalidScore will be returned.
+    ScoreType GetScore(Student::IDType student_id,
+                       const Course::IDType &course_id) const;
 
     bool ChangeScore(Student::IDType student_id,
                      const Course::IDType &course_id,

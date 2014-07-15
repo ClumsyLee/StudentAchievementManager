@@ -217,6 +217,16 @@ void Manager::RemoveFinalScore(const Course::IDType &course_id)
         iter->second.RemoveFinalScore();
 }
 
+ScoreType Manager::GetScore(Student::IDType student_id,
+                            const Course::IDType &course_id) const
+{
+    auto iter = courses_.find(course_id);
+    if (iter == courses_.end())
+        return false;
+
+    return iter->second.LookUpScore(student_id);
+}
+
 bool Manager::ChangeScore(Student::IDType student_id,
                           const Course::IDType &course_id,
                           ScoreType new_score)
