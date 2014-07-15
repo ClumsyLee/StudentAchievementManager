@@ -50,6 +50,10 @@ class Analyser
 
     bool GenerateTranscript(const Manager &manager,
                             StudentInfo::IDType student_id,
+                            Transcript &transcript);
+
+    bool GenerateTranscript(const Manager &manager,
+                            StudentInfo::IDType student_id,
                             std::function<bool(const Course &)> course_filter,
                             Transcript &transcript);
 

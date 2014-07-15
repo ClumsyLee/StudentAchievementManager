@@ -1,7 +1,7 @@
-
 #ifndef SAM_COURSE_H_
 #define SAM_COURSE_H_
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>

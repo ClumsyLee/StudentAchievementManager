@@ -29,25 +29,24 @@ class CommandLineInterface : public Interface
     // return true if need to exit
     bool ParseAndRunCommand(const std::string &command);
 
-    void ListStudents(const std::string &command);
-    void AddStudent(const std::string &command);
-    void RemoveStudent(const std::string &command);
-    void ShowStudent(const std::string &command);
+    void ListStudents(const std::string &args);
+    void AddStudent(const std::string &args);
+    void RemoveStudent(const std::string &args);
+    void ShowStudent(const std::string &args);
 
 
-    void ListCourses(const std::string &command);
-    void AddCourse(const std::string &command);
-    void RemoveCourse(const std::string &command);
-    void ShowCourse(const std::string &command);
+    void ListCourses(const std::string &args);
+    void AddCourse(const std::string &args);
+    void RemoveCourse(const std::string &args);
+    void ShowCourse(const std::string &args);
 
-    void RegisterToCourse(const std::string &command);
-    void DropFromCourse(const std::string &command);
+    void RegisterToCourse(const std::string &args);
+    void DropFromCourse(const std::string &args);
+
+    void Save(const std::string &args);
+    void Load(const std::string &args);
 
     void PrintHelpInfo() const;
-
-    static void PrintStudentInfo(std::ostream &os, const StudentInfo &info);
-    static void PrintCourseInfo(std::ostream &os, const CourseInfo &info);
-
 
     std::vector<Command> commands_;
     std::string prompt_;

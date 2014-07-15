@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "command_line_interface.h"
+#include "io.h"
 
 namespace SAM {
 
@@ -18,9 +19,12 @@ CommandLineInterface::CommandLineInterface()
               {"crs", &CommandLineInterface::ShowCourse},
 
               {"register", &CommandLineInterface::RegisterToCourse},
-              {"drop", &CommandLineInterface::DropFromCourse}
+              {"drop", &CommandLineInterface::DropFromCourse},
+
+              {"save", &CommandLineInterface::Save},
+              {"load", &CommandLineInterface::Load}
           },
-          prompt_("SAM-0.1: "),
+          prompt_("SAM-0.2: "),
           manager_()
 {
 }
@@ -62,37 +66,26 @@ bool CommandLineInterface::ParseAndRunCommand(const std::string &command)
 }
 
 
-void CommandLineInterface::ListStudents(const std::string &command)
+void CommandLineInterface::ListStudents(const std::string &args)
 {
     for (auto iter = manager_.student_begin(); iter != manager_.student_end();
          ++iter)
     {
-        PrintStudentInfo(std::cout, iter->second.info());
+        std::cout << iter->info().ToString() << std::endl;
     }
 }
 
-void CommandLineInterface::AddStudent(const std::string &command)
+void CommandLineInterface::AddStudent(const std::string &args)
 {
-    std::istringstream iss(command);
-
-    StudentInfo info;
-
-    if (iss >> info.id >> info.name >> info.is_male)
-    {
-        if (!manager_.AddStudent(info))
-            std::cout << "Fail to add student: ID " << info.id
-                      << " has been occupied\n";
-    }
-    else
-    {
-        std::cout << "Syntax error\n"
-                     "Usage: add-stu <ID> <name> <is male>\n";
-    }
+    StudentInfo info(args);
+    if (!manager_.AddStudent(info))
+        std::cout << "Fail to add student: ID " << info.id
+                  << " has been occupied\n";
 }
 
-void CommandLineInterface::RemoveStudent(const std::string &command)
+void CommandLineInterface::RemoveStudent(const std::string &args)
 {
-    std::istringstream iss(command);
+    std::istringstream iss(args);
 
     StudentInfo::IDType id;
     if (iss >> id)
@@ -108,37 +101,38 @@ void CommandLineInterface::RemoveStudent(const std::string &command)
     }
 }
 
-void CommandLineInterface::ShowStudent(const std::string &command)
+void CommandLineInterface::ShowStudent(const std::string &args)
 {
-    std::istringstream iss(command);
+    std::istringstream iss(args);
 
     StudentInfo::IDType id;
     if (iss >> id)
     {
-        Student student;
-        if (manager_.SearchStudent(id, student))
+        auto stu_iter = manager_.FindStudent(id);
+        if (stu_iter != manager_.student_end())
         {
-            PrintStudentInfo(std::cout, student.info());
+            std::cout << stu_iter->info().ToString() << std::endl;
             std::cout << "Course taken:\n";
 
-            Course course;
-            auto courses_taken = student.courses_taken();
-            for (const Course::IDType &course_id : courses_taken)
+            for (const Course::IDType &course_id : stu_iter->courses_taken())
             {
-                if (!manager_.SearchCourse(course_id, course))
+                auto crs_iter = manager_.FindCourse(course_id);
+
+                if (crs_iter == manager_.course_end())
                 {
                     std::cout << "ERROR: Failed to find a course that should "
                                  "exist\n"
                                  "Student ID: " << id << "\n"
                                  "Course fail: " << course_id << "\n"
                                  "Students now:\n";
-                    ListStudents(command);
+                    ListStudents(args);
                     std::cout << "Courses now:\n";
-                    ListCourses(command);
+                    ListCourses(args);
 
                     std::exit(EXIT_FAILURE);
                 }
-                PrintCourseInfo(std::cout, course.info());
+
+                std::cout << crs_iter->info().ToString() << std::endl;
             }
         }
         else
@@ -153,38 +147,27 @@ void CommandLineInterface::ShowStudent(const std::string &command)
     }
 }
 
-void CommandLineInterface::ListCourses(const std::string &command)
+void CommandLineInterface::ListCourses(const std::string &args)
 {
     for (auto iter = manager_.course_begin(); iter != manager_.course_end();
          ++iter)
     {
-        PrintCourseInfo(std::cout, iter->second.info());
+        std::cout << iter->info().ToString() << std::endl;
     }
 }
 
-void CommandLineInterface::AddCourse(const std::string &command)
+void CommandLineInterface::AddCourse(const std::string &args)
 {
-    std::istringstream iss(command);
+    CourseInfo info(args);
 
-    CourseInfo info;
-
-    iss >> info.id >> info.name >> info.credit >> info.teacher_name;
-    if (!iss)
-    {
-        std::cout << "Syntax error\n"
-                  << "Usage: add-crs <ID> <name> <credit> <teacher name>\n";
-    }
-    else
-    {
-        if (!manager_.AddCourse(info))
-            std::cout << "Fail to add course: ID " << info.id
-                      << " has been occupied\n";
-    }
+    if (!manager_.AddCourse(info))
+        std::cout << "Fail to add course: ID " << info.id
+                  << " has been occupied\n";
 }
 
-void CommandLineInterface::RemoveCourse(const std::string &command)
+void CommandLineInterface::RemoveCourse(const std::string &args)
 {
-    std::istringstream iss(command);
+    std::istringstream iss(args);
 
     CourseInfo::IDType id;
     if (iss >> id)
@@ -200,37 +183,37 @@ void CommandLineInterface::RemoveCourse(const std::string &command)
     }
 }
 
-void CommandLineInterface::ShowCourse(const std::string &command)
+void CommandLineInterface::ShowCourse(const std::string &args)
 {
-    std::istringstream iss(command);
+    std::istringstream iss(args);
 
     CourseInfo::IDType id;
     if (iss >> id)
     {
-        Course course;
-        if (manager_.SearchCourse(id, course))
+        auto crs_iter = manager_.FindCourse(id);
+        if (crs_iter != manager_.course_end())
         {
-            PrintCourseInfo(std::cout, course.info());
+            std::cout << crs_iter->info().ToString() << std::endl;
             std::cout << "Student(s) in this course:\n";
 
             Student student;
-            auto student_list = course.StudentList();
-            for (const Student::IDType &student_id : student_list)
+            for (const ScorePiece &score_piece : crs_iter->final_score())
             {
-                if (!manager_.SearchStudent(student_id, student))
+                auto stu_iter = manager_.FindStudent(score_piece.id);
+                if (stu_iter == manager_.student_end())
                 {
                     std::cout << "ERROR: Failed to find a student that should "
                                  "exist\n"
                                  "Course ID: " << id << "\n"
-                                 "Student fail: " << student_id << "\n"
+                                 "Student fail: " << score_piece.id << "\n"
                                  "Students now:\n";
-                    ListStudents(command);
+                    ListStudents(args);
                     std::cout << "Courses now:\n";
-                    ListCourses(command);
+                    ListCourses(args);
 
                     std::exit(EXIT_FAILURE);
                 }
-                PrintStudentInfo(std::cout, student.info());
+                std::cout << student.info().ToString() << std::endl;
             }
         }
         else
@@ -245,9 +228,9 @@ void CommandLineInterface::ShowCourse(const std::string &command)
     }
 }
 
-void CommandLineInterface::RegisterToCourse(const std::string &command)
+void CommandLineInterface::RegisterToCourse(const std::string &args)
 {
-    std::istringstream iss(command);
+    std::istringstream iss(args);
 
     Student::IDType student_id;
     Course::IDType course_id;
@@ -268,9 +251,9 @@ void CommandLineInterface::RegisterToCourse(const std::string &command)
     }
 }
 
-void CommandLineInterface::DropFromCourse(const std::string &command)
+void CommandLineInterface::DropFromCourse(const std::string &args)
 {
-    std::istringstream iss(command);
+    std::istringstream iss(args);
 
     Student::IDType student_id;
     Course::IDType course_id;
@@ -291,23 +274,25 @@ void CommandLineInterface::DropFromCourse(const std::string &command)
     }
 }
 
-
-void CommandLineInterface::PrintStudentInfo(std::ostream &os,
-                                            const StudentInfo &info)
+void CommandLineInterface::Save(const std::string &args)
 {
-    os << info.id << " "
-       << info.name << " "
-       << (info.is_male? "男": "女") << std::endl;
+    ManagerWriter writer;
+
+    if (writer.Write("students.dat", "courses.dat", manager_))
+        std::cout << "Saved\n";
+    else
+        std::cout << "Failed to save\n";
 }
 
-void CommandLineInterface::PrintCourseInfo(std::ostream &os,
-                                           const CourseInfo &info)
-{
-    os << info.id << " "
-       << info.name << " "
-       << info.credit << " "
-       << info.teacher_name << std::endl;
-}
 
+void CommandLineInterface::Load(const std::string &args)
+{
+    ManagerReader reader;
+
+    if (reader.Read("students.dat", "courses.dat", manager_))
+        std::cout << "Loaded\n";
+    else
+        std::cout << "Failed to load\n";
+}
 
 }  // namespace SAM
