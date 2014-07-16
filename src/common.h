@@ -1,6 +1,7 @@
 #ifndef SAM_COMMON_H_
 #define SAM_COMMON_H_
 
+#include <cstddef>
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -27,14 +28,14 @@ struct CourseInfo
             << name << ' '
             << credit << ' '
             << capacity << ' '
-            << teacher_name << ' ';
+            << teacher_name;
         return oss.str();
     }
 
     IDType id;
     std::string name;
     int credit;
-    int capacity;
+    std::size_t capacity;
 
     std::string teacher_name;
 };
@@ -55,7 +56,7 @@ struct StudentInfo
         std::ostringstream oss;
         oss << id << ' '
             << name << ' '
-            << is_male << ' ';
+            << is_male;
         return oss.str();
     }
 

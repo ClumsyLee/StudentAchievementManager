@@ -6,25 +6,28 @@
 
 namespace SAM {
 
+std::vector<CommandLineInterface::Command> CommandLineInterface::commands_ = {
+    {"ls-stu", &CommandLineInterface::ListStudents},
+    {"add-stu", &CommandLineInterface::AddStudent},
+    {"rm-stu", &CommandLineInterface::RemoveStudent},
+    {"stu", &CommandLineInterface::ShowStudent},
+
+    {"ls-crs", &CommandLineInterface::ListCourses},
+    {"add-crs", &CommandLineInterface::AddCourse},
+    {"rm-crs", &CommandLineInterface::RemoveCourse},
+    {"crs", &CommandLineInterface::ShowCourse},
+
+    {"register", &CommandLineInterface::RegisterToCourse},
+    {"drop", &CommandLineInterface::DropFromCourse},
+
+    {"save", &CommandLineInterface::Save},
+    {"load", &CommandLineInterface::Load}
+};
+
+
 CommandLineInterface::CommandLineInterface()
-        : commands_{
-              {"ls-stu", &CommandLineInterface::ListStudents},
-              {"add-stu", &CommandLineInterface::AddStudent},
-              {"rm-stu", &CommandLineInterface::RemoveStudent},
-              {"stu", &CommandLineInterface::ShowStudent},
-
-              {"ls-crs", &CommandLineInterface::ListCourses},
-              {"add-crs", &CommandLineInterface::AddCourse},
-              {"rm-crs", &CommandLineInterface::RemoveCourse},
-              {"crs", &CommandLineInterface::ShowCourse},
-
-              {"register", &CommandLineInterface::RegisterToCourse},
-              {"drop", &CommandLineInterface::DropFromCourse},
-
-              {"save", &CommandLineInterface::Save},
-              {"load", &CommandLineInterface::Load}
-          },
-          prompt_("SAM-0.2: "),
+        : prompt_("SAM-0.2: "),
+          command_stream_(),
           manager_()
 {
 }
@@ -36,27 +39,28 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
     std::cout << prompt_;
     while (std::getline(std::cin, command))
     {
-        if (ParseAndRunCommand(command))
+        command_stream_.str(command);  // add this line to stream
+
+        if (ParseAndRunCommand())
             return 0;
         std::cout << prompt_;
     }
 
     std::cout << std::endl;
-
     return 0;
 }
 
 
-bool CommandLineInterface::ParseAndRunCommand(const std::string &command)
+bool CommandLineInterface::ParseAndRunCommand()
 {
+    std::string command;
+    command_stream_ >> command;  // if fail, command will stay empty
+
     for (const Command &legal_command : commands_)
     {
-        const std::string &command_name = legal_command.first;
-        auto command_size = command_name.size();
-
-        if (command.compare(0, command_size, command_name) == 0)
+        if (legal_command.first == command)
         {
-            legal_command.second(*this, command.substr(command_size));
+            legal_command.second(*this);
             return false;
         }
     }
@@ -66,7 +70,7 @@ bool CommandLineInterface::ParseAndRunCommand(const std::string &command)
 }
 
 
-void CommandLineInterface::ListStudents(const std::string &args)
+void CommandLineInterface::ListStudents()
 {
     for (auto iter = manager_.student_begin(); iter != manager_.student_end();
          ++iter)
@@ -75,20 +79,18 @@ void CommandLineInterface::ListStudents(const std::string &args)
     }
 }
 
-void CommandLineInterface::AddStudent(const std::string &args)
+void CommandLineInterface::AddStudent()
 {
-    StudentInfo info(args);
+    StudentInfo info(command_stream_.str());
     if (!manager_.AddStudent(info))
         std::cout << "Fail to add student: ID " << info.id
                   << " has been occupied\n";
 }
 
-void CommandLineInterface::RemoveStudent(const std::string &args)
+void CommandLineInterface::RemoveStudent()
 {
-    std::istringstream iss(args);
-
     StudentInfo::IDType id;
-    if (iss >> id)
+    if (command_stream_ >> id)
     {
         if (!manager_.RemoveStudent(id))
             std::cout << "Fail to remove student: no student with ID "
@@ -101,12 +103,10 @@ void CommandLineInterface::RemoveStudent(const std::string &args)
     }
 }
 
-void CommandLineInterface::ShowStudent(const std::string &args)
+void CommandLineInterface::ShowStudent()
 {
-    std::istringstream iss(args);
-
     StudentInfo::IDType id;
-    if (iss >> id)
+    if (command_stream_ >> id)
     {
         auto stu_iter = manager_.FindStudent(id);
         if (stu_iter != manager_.student_end())
@@ -125,9 +125,9 @@ void CommandLineInterface::ShowStudent(const std::string &args)
                                  "Student ID: " << id << "\n"
                                  "Course fail: " << course_id << "\n"
                                  "Students now:\n";
-                    ListStudents(args);
+                    ListStudents();
                     std::cout << "Courses now:\n";
-                    ListCourses(args);
+                    ListCourses();
 
                     std::exit(EXIT_FAILURE);
                 }
@@ -147,7 +147,7 @@ void CommandLineInterface::ShowStudent(const std::string &args)
     }
 }
 
-void CommandLineInterface::ListCourses(const std::string &args)
+void CommandLineInterface::ListCourses()
 {
     for (auto iter = manager_.course_begin(); iter != manager_.course_end();
          ++iter)
@@ -156,21 +156,19 @@ void CommandLineInterface::ListCourses(const std::string &args)
     }
 }
 
-void CommandLineInterface::AddCourse(const std::string &args)
+void CommandLineInterface::AddCourse()
 {
-    CourseInfo info(args);
+    CourseInfo info(command_stream_.str());
 
     if (!manager_.AddCourse(info))
         std::cout << "Fail to add course: ID " << info.id
                   << " has been occupied\n";
 }
 
-void CommandLineInterface::RemoveCourse(const std::string &args)
+void CommandLineInterface::RemoveCourse()
 {
-    std::istringstream iss(args);
-
     CourseInfo::IDType id;
-    if (iss >> id)
+    if (command_stream_ >> id)
     {
         if (!manager_.RemoveCourse(id))
             std::cout << "Fail to remove course: no course with ID "
@@ -183,12 +181,10 @@ void CommandLineInterface::RemoveCourse(const std::string &args)
     }
 }
 
-void CommandLineInterface::ShowCourse(const std::string &args)
+void CommandLineInterface::ShowCourse()
 {
-    std::istringstream iss(args);
-
     CourseInfo::IDType id;
-    if (iss >> id)
+    if (command_stream_ >> id)
     {
         auto crs_iter = manager_.FindCourse(id);
         if (crs_iter != manager_.course_end())
@@ -207,9 +203,9 @@ void CommandLineInterface::ShowCourse(const std::string &args)
                                  "Course ID: " << id << "\n"
                                  "Student fail: " << score_piece.id << "\n"
                                  "Students now:\n";
-                    ListStudents(args);
+                    ListStudents();
                     std::cout << "Courses now:\n";
-                    ListCourses(args);
+                    ListCourses();
 
                     std::exit(EXIT_FAILURE);
                 }
@@ -228,14 +224,12 @@ void CommandLineInterface::ShowCourse(const std::string &args)
     }
 }
 
-void CommandLineInterface::RegisterToCourse(const std::string &args)
+void CommandLineInterface::RegisterToCourse()
 {
-    std::istringstream iss(args);
-
     Student::IDType student_id;
     Course::IDType course_id;
 
-    if (iss >> student_id >> course_id)
+    if (command_stream_ >> student_id >> course_id)
     {
         if (!manager_.AddStudentToCourse(student_id, course_id))
         {
@@ -251,14 +245,12 @@ void CommandLineInterface::RegisterToCourse(const std::string &args)
     }
 }
 
-void CommandLineInterface::DropFromCourse(const std::string &args)
+void CommandLineInterface::DropFromCourse()
 {
-    std::istringstream iss(args);
-
     Student::IDType student_id;
     Course::IDType course_id;
 
-    if (iss >> student_id >> course_id)
+    if (command_stream_ >> student_id >> course_id)
     {
         if (!manager_.RemoveStudentFromCourse(student_id, course_id))
         {
@@ -274,7 +266,7 @@ void CommandLineInterface::DropFromCourse(const std::string &args)
     }
 }
 
-void CommandLineInterface::Save(const std::string &args)
+void CommandLineInterface::Save()
 {
     ManagerWriter writer;
 
@@ -285,7 +277,7 @@ void CommandLineInterface::Save(const std::string &args)
 }
 
 
-void CommandLineInterface::Load(const std::string &args)
+void CommandLineInterface::Load()
 {
     ManagerReader reader;
 

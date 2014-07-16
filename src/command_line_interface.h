@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,35 +23,34 @@ class CommandLineInterface : public Interface
 
 
  private:
-    typedef std::function<void(CommandLineInterface &,
-                               const std::string &)> ParseFunction;
+    typedef std::function<void(CommandLineInterface &)> ParseFunction;
     typedef std::pair<std::string, ParseFunction> Command;
 
     // return true if need to exit
-    bool ParseAndRunCommand(const std::string &command);
+    bool ParseAndRunCommand();
 
-    void ListStudents(const std::string &args);
-    void AddStudent(const std::string &args);
-    void RemoveStudent(const std::string &args);
-    void ShowStudent(const std::string &args);
+    void ListStudents();
+    void AddStudent();
+    void RemoveStudent();
+    void ShowStudent();
 
+    void ListCourses();
+    void AddCourse();
+    void RemoveCourse();
+    void ShowCourse();
 
-    void ListCourses(const std::string &args);
-    void AddCourse(const std::string &args);
-    void RemoveCourse(const std::string &args);
-    void ShowCourse(const std::string &args);
+    void RegisterToCourse();
+    void DropFromCourse();
 
-    void RegisterToCourse(const std::string &args);
-    void DropFromCourse(const std::string &args);
-
-    void Save(const std::string &args);
-    void Load(const std::string &args);
+    void Save();
+    void Load();
 
     void PrintHelpInfo() const;
 
-    std::vector<Command> commands_;
-    std::string prompt_;
+    static std::vector<Command> commands_;
 
+    std::string prompt_;
+    std::istringstream command_stream_;
     Manager manager_;
 };
 
