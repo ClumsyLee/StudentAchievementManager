@@ -11,6 +11,10 @@ class ManagerReader
     bool Read(const std::string &student_file_name,
               const std::string &course_file_name,
               Manager &manager);
+    bool ReadFinalScore(const std::string &file_name,
+                        Manager &manager,
+                        CourseInfo::IDType course_id,
+                        std::vector<Student::IDType> &unscored_students);
 };
 
 class ManagerWriter

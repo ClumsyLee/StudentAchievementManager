@@ -3,9 +3,10 @@
 
 #include <cstddef>
 #include <cstdint>
+
+#include <iomanip>
 #include <sstream>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace SAM {
@@ -31,6 +32,40 @@ struct CourseInfo
             << teacher_name;
         return oss.str();
     }
+
+    std::string Format() const
+    {
+        using std::setw;
+
+        std::ostringstream oss;
+        oss << setw(id_width + 1) << id << ' '  // 1 Chinese char
+            << setw(name_width + name.size() / 3) << name << ' '
+            << setw(credit_width) << credit << ' '
+            << setw(capacity_width) << capacity << ' '
+            << setw(capacity_width + teacher_name.size() / 3) << teacher_name;
+
+        return oss.str();
+    }
+
+    static std::string Heading()
+    {
+        using std::setw;
+
+        std::ostringstream oss;
+        oss << setw(id_width) << "ID" << ' '
+            << setw(name_width + 3) << "课程名" << ' '
+            << setw(credit_width + 2) << "学分" << ' '
+            << setw(capacity_width + 3) << "课容量" << ' '
+            << setw(capacity_width + 2) << "教师";
+
+        return oss.str();
+    }
+
+    constexpr static int id_width = 12;
+    constexpr static int name_width = 12;
+    constexpr static int credit_width = 12;
+    constexpr static int capacity_width = 12;
+    constexpr static int teacher_name_width = 12;
 
     IDType id;
     std::string name;
@@ -59,6 +94,34 @@ struct StudentInfo
             << is_male;
         return oss.str();
     }
+
+    std::string Format() const
+    {
+        using std::setw;
+
+        std::ostringstream oss;
+        oss << setw(id_width) << id << ' '
+            << setw(name_width + name.size() / 3) << name << ' '
+            << setw(is_male_width + 1) << (is_male ? "男" : "女");
+
+        return oss.str();
+    }
+
+    static std::string Heading()
+    {
+        using std::setw;
+
+        std::ostringstream oss;
+        oss << setw(id_width) << "ID" << ' '
+            << setw(name_width + 2) << "姓名" << ' '
+            << setw(is_male_width + 2) << "性别";
+
+        return oss.str();
+    }
+
+    constexpr static int id_width = 12;
+    constexpr static int name_width = 12;
+    constexpr static int is_male_width = 12;
 
     IDType id;
     std::string name;

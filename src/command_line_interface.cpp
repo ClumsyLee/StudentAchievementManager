@@ -39,6 +39,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
     std::cout << prompt_;
     while (std::getline(std::cin, command))
     {
+        command_stream_.clear();
         command_stream_.str(command);  // add this line to stream
 
         if (ParseAndRunCommand())
@@ -46,7 +47,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
         std::cout << prompt_;
     }
 
-    std::cout << std::endl;
     return 0;
 }
 
@@ -54,7 +54,11 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
 bool CommandLineInterface::ParseAndRunCommand()
 {
     std::string command;
-    command_stream_ >> command;  // if fail, command will stay empty
+    if (!(command_stream_ >> command))  // if fail, command will stay empty
+        return false;
+
+    if (command == "quit")
+        return true;
 
     for (const Command &legal_command : commands_)
     {
@@ -72,10 +76,14 @@ bool CommandLineInterface::ParseAndRunCommand()
 
 void CommandLineInterface::ListStudents()
 {
+    std::string Heading = StudentInfo::Heading();
+    std::cout << Heading << std::endl
+              << std::string(Heading.size(), '-') << std::endl;
+
     for (auto iter = manager_.student_begin(); iter != manager_.student_end();
          ++iter)
     {
-        std::cout << iter->info().ToString() << std::endl;
+        std::cout << iter->info().Format() << std::endl;
     }
 }
 
@@ -111,7 +119,7 @@ void CommandLineInterface::ShowStudent()
         auto stu_iter = manager_.FindStudent(id);
         if (stu_iter != manager_.student_end())
         {
-            std::cout << stu_iter->info().ToString() << std::endl;
+            std::cout << stu_iter->info().Format() << std::endl;
             std::cout << "Course taken:\n";
 
             for (const Course::IDType &course_id : stu_iter->courses_taken())
@@ -132,7 +140,7 @@ void CommandLineInterface::ShowStudent()
                     std::exit(EXIT_FAILURE);
                 }
 
-                std::cout << crs_iter->info().ToString() << std::endl;
+                std::cout << crs_iter->info().Format() << std::endl;
             }
         }
         else
@@ -149,10 +157,14 @@ void CommandLineInterface::ShowStudent()
 
 void CommandLineInterface::ListCourses()
 {
+    std::string Heading = CourseInfo::Heading();
+    std::cout << Heading << std::endl
+              << std::string(Heading.size(), '-') << std::endl;
+
     for (auto iter = manager_.course_begin(); iter != manager_.course_end();
          ++iter)
     {
-        std::cout << iter->info().ToString() << std::endl;
+        std::cout << iter->info().Format() << std::endl;
     }
 }
 
@@ -189,7 +201,7 @@ void CommandLineInterface::ShowCourse()
         auto crs_iter = manager_.FindCourse(id);
         if (crs_iter != manager_.course_end())
         {
-            std::cout << crs_iter->info().ToString() << std::endl;
+            std::cout << crs_iter->info().Format() << std::endl;
             std::cout << "Student(s) in this course:\n";
 
             Student student;
@@ -209,7 +221,7 @@ void CommandLineInterface::ShowCourse()
 
                     std::exit(EXIT_FAILURE);
                 }
-                std::cout << student.info().ToString() << std::endl;
+                std::cout << stu_iter->info().Format() << std::endl;
             }
         }
         else

@@ -46,6 +46,32 @@ bool ManagerReader::Read(const std::string &student_file_name,
     return true;
 }
 
+bool ManagerReader::ReadFinalScore(
+        const std::string &file_name,
+        Manager &manager,
+        CourseInfo::IDType course_id,
+        std::vector<Student::IDType> &unscored_students)
+{
+    if (!manager.HasCourse(course_id))
+        return false;
+
+    std::ifstream fin(file_name);
+    if (!fin.is_open())
+        return false;
+
+    ScorePiece score_piece;
+    FinalScore final_score;
+
+    while (fin >> score_piece.id >> score_piece.score)
+    {
+        final_score.push_back(score_piece);
+    }
+
+    manager.RecordFinalScore(course_id, final_score, unscored_students);
+
+    return true;
+}
+
 bool ManagerWriter::Write(const std::string &student_file_name,
                           const std::string &course_file_name,
                           const Manager &manager)

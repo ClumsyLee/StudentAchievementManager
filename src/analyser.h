@@ -13,10 +13,11 @@ namespace SAM {
 struct CourseIDInfo
 {
     CourseIDInfo() = default;
-    explicit CourseIDInfo(const CourseInfo &course_info);
-    explicit operator CourseInfo() const;
+    explicit CourseIDInfo(const CourseInfo::IDType &course_id);
+    explicit operator CourseInfo::IDType() const;
 
     enum Season { SPRING, SUMMER, FALL };
+    static const char * kSeasonStr[3];
 
     int id;
     int year;
