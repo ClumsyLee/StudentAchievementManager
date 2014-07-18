@@ -39,9 +39,9 @@ class Course
     void RemoveFinalScore();
 
     // If the student is not in this course, kInvalidScore will be returned.
-    ScoreType LookUpScore(Student::IDType student_id) const;
-    ScoreType LookUpScore(const Student &student) const
-    { return LookUpScore(student.info().id); }
+    ScoreType GetScore(Student::IDType student_id) const;
+    ScoreType GetScore(const Student &student) const
+    { return GetScore(student.info().id); }
 
     // If the arguments are invalid, nothing will be done
     bool ChangeScore(Student::IDType student_id, ScoreType new_score);

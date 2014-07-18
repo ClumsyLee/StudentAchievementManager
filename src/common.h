@@ -121,7 +121,7 @@ struct CourseInfo
     constexpr static int id_width = 12;
     constexpr static int name_width = 12;
     constexpr static int department_width = 16;
-    constexpr static int credit_width = 6;
+    constexpr static int credit_width = 5;
     constexpr static int capacity_width = 7;
     constexpr static int teacher_name_width = 8;
 
@@ -184,8 +184,8 @@ struct StudentInfo
     }
 
     constexpr static int id_width = 12;
-    constexpr static int name_width = 12;
-    constexpr static int is_male_width = 12;
+    constexpr static int name_width = 8;
+    constexpr static int is_male_width = 5;
     constexpr static int department_width = 16;
 
     IDType id;

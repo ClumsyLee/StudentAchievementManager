@@ -60,7 +60,7 @@ bool Manager::SetStudentInfo(Student::IDType student_id,
         for (Course::IDType course_id : courses_taken)
         {
             // save scores
-            auto score_before = courses_[course_id].LookUpScore(student_id);
+            auto score_before = courses_[course_id].GetScore(student_id);
 
             courses_[course_id].RemoveStudent(iter->second);
             courses_[course_id].AddStudent(new_student);
@@ -224,7 +224,7 @@ ScoreType Manager::GetScore(Student::IDType student_id,
     if (iter == courses_.end())
         return false;
 
-    return iter->second.LookUpScore(student_id);
+    return iter->second.GetScore(student_id);
 }
 
 bool Manager::ChangeScore(Student::IDType student_id,

@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 
@@ -5,6 +6,8 @@
 #include "io.h"
 
 namespace SAM {
+
+static const int kScoreWidth = 5;
 
 std::vector<CommandLineInterface::Command> CommandLineInterface::commands_ = {
     {"ls-stu", &CommandLineInterface::ListStudents},
@@ -17,7 +20,7 @@ std::vector<CommandLineInterface::Command> CommandLineInterface::commands_ = {
     {"rm-crs", &CommandLineInterface::RemoveCourse},
     {"crs", &CommandLineInterface::ShowCourse},
 
-    {"register", &CommandLineInterface::RegisterToCourse},
+    {"reg", &CommandLineInterface::RegisterToCourse},
     {"drop", &CommandLineInterface::DropFromCourse},
 
     {"save", &CommandLineInterface::Save},
@@ -113,14 +116,19 @@ void CommandLineInterface::RemoveStudent()
 
 void CommandLineInterface::ShowStudent()
 {
+    using std::cout;
+
     StudentInfo::IDType id;
     if (command_stream_ >> id)
     {
         auto stu_iter = manager_.FindStudent(id);
         if (stu_iter != manager_.student_end())
         {
-            std::cout << stu_iter->info().Format() << std::endl;
-            std::cout << "Course taken:\n";
+            cout << StudentInfo::Heading() << std::endl;
+            cout << stu_iter->info().Format() << std::endl;
+            cout << "所选课程：\n";
+            cout << CourseInfo::Heading() << ' '
+                      << std::setw(kScoreWidth + 2) << "分数" << std::endl;
 
             for (const Course::IDType &course_id : stu_iter->courses_taken())
             {
@@ -128,19 +136,28 @@ void CommandLineInterface::ShowStudent()
 
                 if (crs_iter == manager_.course_end())
                 {
-                    std::cout << "ERROR: Failed to find a course that should "
+                    cout << "ERROR: Failed to find a course that should "
                                  "exist\n"
                                  "Student ID: " << id << "\n"
                                  "Course fail: " << course_id << "\n"
                                  "Students now:\n";
                     ListStudents();
-                    std::cout << "Courses now:\n";
+                    cout << "Courses now:\n";
                     ListCourses();
 
                     std::exit(EXIT_FAILURE);
                 }
 
-                std::cout << crs_iter->info().Format() << std::endl;
+                cout << crs_iter->info().Format() << ' ';
+
+                cout.width(kScoreWidth);
+                ScoreType score = crs_iter->GetScore(id);
+                if (score == kInvalidScore)
+                    cout << "*";
+                else
+                    cout << score;
+
+                cout << std::endl;
             }
         }
         else

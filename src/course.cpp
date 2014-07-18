@@ -66,7 +66,7 @@ bool Course::HasStudent(Student::IDType student_id) const
     return range_pair.first != range_pair.second;
 }
 
-ScoreType Course::LookUpScore(Student::IDType student_id) const
+ScoreType Course::GetScore(Student::IDType student_id) const
 {
     auto range_pair = EqualRange(student_id);
 
