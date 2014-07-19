@@ -1,6 +1,7 @@
 #ifndef SAM_STUDENT_H_
 #define SAM_STUDENT_H_
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -32,11 +33,16 @@ class Student
     // a student with a same id, and update the id that courses have
     void set_info(const StudentInfo &info) { info_ = info; }
 
+    // Return the heading for display
+    static std::string Heading();
+
  private:
     StudentInfo info_;
 
     std::vector<CourseInfo::IDType> courses_taken_;  // always sorted
 };
+
+std::ostream & operator<<(std::ostream &os, const Student &student);
 
 }  // namespace SAM
 

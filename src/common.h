@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include <iomanip>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -66,65 +66,6 @@ struct CourseInfo
 {
     typedef std::string IDType;  // allow course ID to have letters
 
-    CourseInfo() = default;
-    explicit CourseInfo(const std::string &line)
-    {
-        std::istringstream iss(line);
-        iss >> id >> name >> department >> credit >> capacity >> teacher_name;
-    }
-
-    std::string ToString() const
-    {
-        std::ostringstream oss;
-        oss << id << ' '
-            << name << ' '
-            << department << ' '
-            << credit << ' '
-            << capacity << ' '
-            << teacher_name;
-        return oss.str();
-    }
-
-    std::string Format() const
-    {
-        using std::setw;
-
-        std::ostringstream oss;
-        oss << setw(id_width + 1) << id << ' '  // 1 Chinese char
-            << setw(name_width + name.size() / 3) << name << ' '
-            << setw(department_width +
-                    std::strlen(kDepartmentName[department]) / 3)
-                    << kDepartmentName[department] << ' '
-            << setw(credit_width) << credit << ' '
-            << setw(capacity_width) << capacity << ' '
-            << setw(teacher_name_width + teacher_name.size() / 3)
-                    << teacher_name;
-
-        return oss.str();
-    }
-
-    static std::string Heading()
-    {
-        using std::setw;
-
-        std::ostringstream oss;
-        oss << setw(id_width) << "ID" << ' '
-            << setw(name_width + 3) << "课程名" << ' '
-            << setw(department_width + 2) << "院系" << ' '
-            << setw(credit_width + 2) << "学分" << ' '
-            << setw(capacity_width + 3) << "课容量" << ' '
-            << setw(teacher_name_width + 2) << "教师";
-
-        return oss.str();
-    }
-
-    constexpr static int id_width = 12;
-    constexpr static int name_width = 12;
-    constexpr static int department_width = 16;
-    constexpr static int credit_width = 5;
-    constexpr static int capacity_width = 7;
-    constexpr static int teacher_name_width = 8;
-
     IDType id;
     std::string name;
     int department;
@@ -134,65 +75,65 @@ struct CourseInfo
     std::string teacher_name;
 };
 
+bool MakeCourseInfo(const std::string &str, CourseInfo &info)
+{
+    std::istringstream iss(str);
+    if (iss >> info.id >> info.name >> info.department >> info.credit
+            >> info.capacity >> info.teacher_name)
+        return true;
+    else
+        return false;
+}
+
+std::string to_string(const CourseInfo &info)
+{
+    std::ostringstream oss;
+    oss << info.id << ' '
+        << info.name << ' '
+        << info.department << ' '
+        << info.credit << ' '
+        << info.capacity << ' '
+        << info.teacher_name;
+    return oss.str();
+}
+
+
 struct StudentInfo
 {
     typedef std::uint_least64_t IDType;
-
-    StudentInfo() = default;
-    explicit StudentInfo(const std::string &line)
-    {
-        std::istringstream iss(line);
-        iss >> id >> name >> is_male >> department;
-    }
-
-    std::string ToString() const
-    {
-        std::ostringstream oss;
-        oss << id << ' '
-            << name << ' '
-            << is_male << ' '
-            << department;
-        return oss.str();
-    }
-
-    std::string Format() const
-    {
-        using std::setw;
-
-        std::ostringstream oss;
-        oss << setw(id_width) << id << ' '
-            << setw(name_width + name.size() / 3) << name << ' '
-            << setw(is_male_width + 1) << (is_male ? "男" : "女")
-            << setw(department_width +
-                    std::strlen(kDepartmentName[department]) / 3)
-                    << kDepartmentName[department] << ' ';
-
-        return oss.str();
-    }
-
-    static std::string Heading()
-    {
-        using std::setw;
-
-        std::ostringstream oss;
-        oss << setw(id_width) << "ID" << ' '
-            << setw(name_width + 2) << "姓名" << ' '
-            << setw(is_male_width + 2) << "性别"
-            << setw(department_width + 2) << "院系";
-
-        return oss.str();
-    }
-
-    constexpr static int id_width = 12;
-    constexpr static int name_width = 8;
-    constexpr static int is_male_width = 5;
-    constexpr static int department_width = 16;
 
     IDType id;
     std::string name;
     bool is_male;
     int department;
 };
+
+bool MakeStudentInfo(const std::string &str, StudentInfo &info)
+{
+    std::istringstream iss(str);
+    if (iss >> info.id >> info.name >> info.is_male >> info.department)
+        return true;
+    else
+        return false;
+}
+
+std::string to_string(const StudentInfo &info)
+{
+    std::ostringstream oss;
+    oss << info.id << ' '
+        << info.name << ' '
+        << info.is_male << ' '
+        << info.department;
+    return oss.str();
+}
+
+std::ostream & PrintChinese(std::ostream &os, const std::string &str,
+                            std::size_t width)
+{
+    os.width(width + str.size() / 3);  // assume every character takes 3 bytes
+    os << str;
+    return os;
+}
 
 typedef float ScoreType;
 const ScoreType kInvalidScore = -1.0f;

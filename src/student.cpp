@@ -1,5 +1,15 @@
 #include <algorithm>
+#include <iomanip>
 #include "student.h"
+
+namespace {
+
+const int id_width = 12;
+const int name_width = 8;
+const int is_male_width = 5;
+const int department_width = 16;
+
+}  // namespace
 
 namespace SAM {
 
@@ -38,5 +48,38 @@ bool Student::InCourse(const CourseInfo::IDType &course_id) const
                               course_id);
 }
 
+std::string Student::Heading()
+{
+    using std::setw;
+
+    static std::string heading;
+    static bool heading_is_valid = false;
+
+    if (!heading_is_valid)
+    {
+        std::ostringstream oss;
+        oss << setw(id_width) << "ID" << ' '
+            << setw(name_width + 2) << "姓名" << ' '
+            << setw(is_male_width + 2) << "性别"
+            << setw(department_width + 2) << "院系";
+        heading = oss.str();
+        heading_is_valid = true;
+    }
+
+    return heading;
+}
+
+std::ostream & operator<<(std::ostream &os, const Student &student)
+{
+    using std::setw;
+    const StudentInfo &info = student.info();
+
+    os << setw(id_width) << info.id << ' ';
+    PrintChinese(os, info.name, name_width);
+    os << setw(is_male_width + 1) << (info.is_male ? "男" : "女");
+    PrintChinese(os, kDepartmentName[info.department], department_width);
+
+    return os;
+}
 
 }  // namespace SAM

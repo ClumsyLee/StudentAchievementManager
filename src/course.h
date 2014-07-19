@@ -2,6 +2,7 @@
 #define SAM_COURSE_H_
 
 #include <algorithm>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -56,6 +57,9 @@ class Course
     // mutators
     void set_info(const CourseInfo &info) { info_ = info; }
 
+    // Return the heading for display
+    static std::string Heading();
+
  private:
     std::pair<FinalScore::const_iterator, FinalScore::const_iterator>
     EqualRange(Student::IDType student_id) const
@@ -83,6 +87,9 @@ class Course
 
     FinalScore final_score_;  // always sorted
 };
+
+std::ostream & operator<<(std::ostream &os, const Course &course);
+
 
 }  // namespace SAM
 
