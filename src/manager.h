@@ -26,14 +26,14 @@ class Manager
      public:
         explicit MapItemIterator(MapIter map_iter) : map_iter_(map_iter) {}
 
-        bool operator==(const MapItemIterator &rhs)
+        bool operator==(const MapItemIterator &rhs) const
         { return map_iter_ == rhs.map_iter_; }
 
-        bool operator!=(const MapItemIterator &rhs)
+        bool operator!=(const MapItemIterator &rhs) const
         { return map_iter_ != rhs.map_iter_; }
 
-        const ItemType & operator*() { return map_iter_->second; }
-        const ItemType * operator->() { return &(map_iter_->second); }
+        const ItemType & operator*() const { return map_iter_->second; }
+        const ItemType * operator->() const { return &(map_iter_->second); }
 
         MapItemIterator & operator++()
         {

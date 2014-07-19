@@ -4,6 +4,7 @@
 #define SAM_ANALYSER_H_
 
 #include <functional>
+#include <ostream>
 #include <vector>
 #include "common.h"
 #include "manager.h"
@@ -40,26 +41,39 @@ struct Transcript
 {
     StudentInfo student_info;
     std::vector<TranscriptEntry> final_scores;
+    int total_credit;
     ScoreType gpa;
 };
+
+// Print the transcript to os
+std::ostream & operator<<(std::ostream &os, const Transcript &transcript);
 
 
 class Analyser
 {
  public:
+    typedef std::function<bool(const Course &)> CourseFilter;
+
     Analyser();
 
     bool GenerateTranscript(const Manager &manager,
                             StudentInfo::IDType student_id,
-                            Transcript &transcript);
+                            Transcript &transcript)
+    {
+        return GenerateTranscript(manager,
+                                  student_id,
+                                  [](const Course &) { return true; },
+                                  transcript);
+    }
 
     bool GenerateTranscript(const Manager &manager,
                             StudentInfo::IDType student_id,
-                            std::function<bool(const Course &)> course_filter,
+                            CourseFilter course_filter,
                             Transcript &transcript);
 
  private:
-
+    void SetMaxMinRank(const Manager::CourseIterator &crs_iter,
+                       TranscriptEntry &entry);
 };
 
 }  // namespace SAM
