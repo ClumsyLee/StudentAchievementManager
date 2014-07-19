@@ -18,14 +18,17 @@ bool ManagerReader::Read(const std::string &student_file_name,
     std::string line;
     while (std::getline(student_fin, line))
     {
-        manager.AddStudent(StudentInfo(line));
+        StudentInfo info;
+        MakeStudentInfo(line, info);
+        manager.AddStudent(info);
     }
     student_fin.close();
 
     // read courses
     while (std::getline(course_fin, line))
     {
-        CourseInfo course_info(line);
+        CourseInfo course_info;
+        MakeCourseInfo(line, course_info);
         manager.AddCourse(course_info);
 
         // recover student info
@@ -87,7 +90,7 @@ bool ManagerWriter::Write(const std::string &student_file_name,
          iter != manager.student_end();
          ++iter)
     {
-        student_fout << iter->info().ToString() << std::endl;
+        student_fout << to_string(iter->info()) << std::endl;
     }
     student_fout.close();
 
@@ -96,7 +99,7 @@ bool ManagerWriter::Write(const std::string &student_file_name,
          iter != manager.course_end();
          ++iter)
     {
-        course_fout << iter->info().ToString() << std::endl;
+        course_fout << to_string(iter->info()) << std::endl;
 
         for (const ScorePiece &score_piece : iter->final_score())
         {

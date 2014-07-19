@@ -35,10 +35,22 @@ class Student
 
     // Return the heading for display
     static std::string Heading();
+    constexpr static std::size_t HeadingSize()
+    {
+        return id_width + 1 +
+               name_width + 1 +
+               is_male_width + 1 +
+               department_width;
+    }
+
+    // format
+    static const int id_width = 12;
+    static const int name_width = 8;
+    static const int is_male_width = 5;
+    static const int department_width = 16;
 
  private:
     StudentInfo info_;
-
     std::vector<CourseInfo::IDType> courses_taken_;  // always sorted
 };
 

@@ -1,19 +1,9 @@
-#ifndef SAM_COMMON_H_
-#define SAM_COMMON_H_
-
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-
-#include <ostream>
-#include <sstream>
-#include <string>
-#include <vector>
+#include "common.h"
 
 namespace SAM {
 
-static const int kDepartmentNum = 46;
-static const char *kDepartmentName[kDepartmentNum] = {
+const int kDepartmentNum = 46;
+const char *kDepartmentName[kDepartmentNum] = {
     "建筑学院",  // 0
     "建筑系",
     "土木工程系",
@@ -62,19 +52,6 @@ static const char *kDepartmentName[kDepartmentNum] = {
     "软件学院"  // 45
 };
 
-struct CourseInfo
-{
-    typedef std::string IDType;  // allow course ID to have letters
-
-    IDType id;
-    std::string name;
-    int department;
-    int credit;
-    std::size_t capacity;
-
-    std::string teacher_name;
-};
-
 bool MakeCourseInfo(const std::string &str, CourseInfo &info)
 {
     std::istringstream iss(str);
@@ -96,17 +73,6 @@ std::string to_string(const CourseInfo &info)
         << info.teacher_name;
     return oss.str();
 }
-
-
-struct StudentInfo
-{
-    typedef std::uint_least64_t IDType;
-
-    IDType id;
-    std::string name;
-    bool is_male;
-    int department;
-};
 
 bool MakeStudentInfo(const std::string &str, StudentInfo &info)
 {
@@ -135,17 +101,5 @@ std::ostream & PrintChinese(std::ostream &os, const std::string &str,
     return os;
 }
 
-typedef float ScoreType;
-const ScoreType kInvalidScore = -1.0f;
-
-struct ScorePiece
-{
-    StudentInfo::IDType id;
-    ScoreType score;
-};
-
-typedef std::vector<ScorePiece> FinalScore;
 
 }  // namespace SAM
-
-#endif  // SAM_COMMON_H_

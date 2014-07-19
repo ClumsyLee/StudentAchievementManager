@@ -2,12 +2,15 @@ CXX = g++
 CXXFLAGS = -c -std=c++11 -Wall -Wextra
 MKDIR = mkdir
 
-OBJS = obj/command_line_interface.o obj/course.o obj/io.o obj/main.o obj/manager.o obj/student.o
+OBJS = obj/command_line_interface.o obj/common.o obj/course.o obj/io.o obj/main.o obj/manager.o obj/student.o
 
 bin/SAM: $(OBJS) | bin
 	$(CXX) -o $@ $^ # -lncurses
 
 obj/command_line_interface.o: src/command_line_interface.cpp src/command_line_interface.h src/io.h | obj
+	$(CXX) $(CXXFLAGS) -o $@ $<
+
+obj/common.o: src/common.cpp src/common.h
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 obj/course.o: src/course.cpp src/course.h| obj

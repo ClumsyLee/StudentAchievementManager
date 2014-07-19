@@ -59,6 +59,23 @@ class Course
 
     // Return the heading for display
     static std::string Heading();
+    constexpr static std::size_t HeadingSize()
+    {
+        return id_width + 1 +
+               name_width + 1 +
+               department_width + 1 +
+               credit_width + 1 +
+               capacity_width + 1 +
+               teacher_name_width;
+    }
+
+    // format
+    static const int id_width = 12;
+    static const int name_width = 12;
+    static const int department_width = 16;
+    static const int credit_width = 5;
+    static const int capacity_width = 7;
+    static const int teacher_name_width = 8;
 
  private:
     std::pair<FinalScore::const_iterator, FinalScore::const_iterator>
@@ -81,10 +98,9 @@ class Course
                                 [](const ScorePiece &lhs,
                                    const ScorePiece &rhs)
                                 { return lhs.id < rhs.id; });
-}
+    }
 
     CourseInfo info_;
-
     FinalScore final_score_;  // always sorted
 };
 

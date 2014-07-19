@@ -79,23 +79,29 @@ bool CommandLineInterface::ParseAndRunCommand()
 
 void CommandLineInterface::ListStudents()
 {
-    std::string Heading = StudentInfo::Heading();
-    std::cout << Heading << std::endl
-              << std::string(Heading.size(), '-') << std::endl;
+    std::cout << Student::Heading() << std::endl
+              << std::string(Student::HeadingSize(), '-') << std::endl;
 
     for (auto iter = manager_.student_begin(); iter != manager_.student_end();
          ++iter)
     {
-        std::cout << iter->info().Format() << std::endl;
+        std::cout << *iter << std::endl;
     }
 }
 
 void CommandLineInterface::AddStudent()
 {
-    StudentInfo info(command_stream_.str());
-    if (!manager_.AddStudent(info))
+    StudentInfo info;
+    if (!MakeStudentInfo(command_stream_.str(), info))
+    {
+        std::cout << "Fail to construct student info from \""
+                  << command_stream_.str() << "\"\n";
+    }
+    else if (!manager_.AddStudent(info))
+    {
         std::cout << "Fail to add student: ID " << info.id
                   << " has been occupied\n";
+    }
 }
 
 void CommandLineInterface::RemoveStudent()
@@ -124,16 +130,15 @@ void CommandLineInterface::ShowStudent()
         auto stu_iter = manager_.FindStudent(id);
         if (stu_iter != manager_.student_end())
         {
-            cout << StudentInfo::Heading() << std::endl;
-            cout << stu_iter->info().Format() << std::endl;
-            cout << "所选课程：\n";
-            cout << CourseInfo::Heading() << ' '
-                      << std::setw(kScoreWidth + 2) << "分数" << std::endl;
+            cout << Student::Heading() << std::endl
+                 << *stu_iter << std::endl
+                 << "所选课程：\n"
+                 << Course::Heading() << ' '
+                 << std::setw(kScoreWidth + 2) << "分数" << std::endl;
 
             for (const Course::IDType &course_id : stu_iter->courses_taken())
             {
                 auto crs_iter = manager_.FindCourse(course_id);
-
                 if (crs_iter == manager_.course_end())
                 {
                     cout << "ERROR: Failed to find a course that should "
@@ -148,7 +153,7 @@ void CommandLineInterface::ShowStudent()
                     std::exit(EXIT_FAILURE);
                 }
 
-                cout << crs_iter->info().Format() << ' ';
+                cout << *crs_iter << ' ';
 
                 cout.width(kScoreWidth);
                 ScoreType score = crs_iter->GetScore(id);
@@ -174,24 +179,29 @@ void CommandLineInterface::ShowStudent()
 
 void CommandLineInterface::ListCourses()
 {
-    std::string Heading = CourseInfo::Heading();
-    std::cout << Heading << std::endl
-              << std::string(Heading.size(), '-') << std::endl;
+    std::cout << Course::Heading() << std::endl
+              << std::string(Course::HeadingSize(), '-') << std::endl;
 
     for (auto iter = manager_.course_begin(); iter != manager_.course_end();
          ++iter)
     {
-        std::cout << iter->info().Format() << std::endl;
+        std::cout << *iter << std::endl;
     }
 }
 
 void CommandLineInterface::AddCourse()
 {
-    CourseInfo info(command_stream_.str());
-
-    if (!manager_.AddCourse(info))
+    CourseInfo info;
+    if (!MakeCourseInfo(command_stream_.str(), info))
+    {
+        std::cout << "Fail to construct course info from \""
+                  << command_stream_.str() << "\"\n";
+    }
+    else if (!manager_.AddCourse(info))
+    {
         std::cout << "Fail to add course: ID " << info.id
                   << " has been occupied\n";
+    }
 }
 
 void CommandLineInterface::RemoveCourse()
@@ -212,44 +222,53 @@ void CommandLineInterface::RemoveCourse()
 
 void CommandLineInterface::ShowCourse()
 {
+    using std::cout;
+
     CourseInfo::IDType id;
     if (command_stream_ >> id)
     {
         auto crs_iter = manager_.FindCourse(id);
         if (crs_iter != manager_.course_end())
         {
-            std::cout << crs_iter->info().Format() << std::endl;
-            std::cout << "Student(s) in this course:\n";
+            cout << Course::Heading() << std::endl
+                      << *crs_iter << std::endl
+                      << "课内学生:\n"
+                      << Student::Heading() << ' '
+                      << std::setw(kScoreWidth + 2) << "分数" << std::endl;
 
-            Student student;
             for (const ScorePiece &score_piece : crs_iter->final_score())
             {
                 auto stu_iter = manager_.FindStudent(score_piece.id);
                 if (stu_iter == manager_.student_end())
                 {
-                    std::cout << "ERROR: Failed to find a student that should "
+                    cout << "ERROR: Failed to find a student that should "
                                  "exist\n"
                                  "Course ID: " << id << "\n"
                                  "Student fail: " << score_piece.id << "\n"
                                  "Students now:\n";
                     ListStudents();
-                    std::cout << "Courses now:\n";
+                    cout << "Courses now:\n";
                     ListCourses();
 
                     std::exit(EXIT_FAILURE);
                 }
-                std::cout << stu_iter->info().Format() << std::endl;
+                cout << *stu_iter << ' '
+                     << std::setw(kScoreWidth)
+                     << (score_piece.score == kInvalidScore ?
+                         "*" :
+                         std::to_string(score_piece.score))
+                     << std::endl;
             }
         }
         else
         {
-            std::cout << "No course with ID " << id << std::endl;
+            cout << "No course with ID " << id << std::endl;
         }
     }
     else
     {
-        std::cout << "Syntax error\n"
-                  << "Usage: crs <ID>\n";
+        cout << "Syntax error\n"
+             << "Usage: crs <ID>\n";
     }
 }
 

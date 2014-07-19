@@ -5,17 +5,6 @@
 
 #include "course.h"
 
-namespace {
-
-const int id_width = 12;
-const int name_width = 12;
-const int department_width = 16;
-const int credit_width = 5;
-const int capacity_width = 7;
-const int teacher_name_width = 8;
-
-}  // namespace
-
 namespace SAM {
 
 Course::Course(const CourseInfo &info)
@@ -131,12 +120,13 @@ std::ostream & operator<<(std::ostream &os, const Course &course)
     using std::setw;
     const CourseInfo &info = course.info();
 
-    os << setw(id_width + 1) << info.id << ' ';  // 1 Chinese char
-    PrintChinese(os, info.name, name_width);
-    PrintChinese(os, kDepartmentName[info.department], department_width);
-    os << setw(credit_width) << info.credit << ' '
-       << setw(capacity_width) << info.capacity << ' ';
-    PrintChinese(os, info.teacher_name, teacher_name_width);
+    os << setw(Course::id_width + 1) << info.id << ' ';  // 1 Chinese char
+    PrintChinese(os, info.name, Course::name_width) << ' ';
+    PrintChinese(os, kDepartmentName[info.department],
+                 Course::department_width) << ' ';
+    os << setw(Course::credit_width) << info.credit << ' '
+       << setw(Course::capacity_width) << info.capacity << ' ';
+    PrintChinese(os, info.teacher_name, Course::teacher_name_width);
 
     return os;
 }
