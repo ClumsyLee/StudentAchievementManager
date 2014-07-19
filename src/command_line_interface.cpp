@@ -29,7 +29,7 @@ std::vector<CommandLineInterface::Command> CommandLineInterface::commands_ = {
 
 
 CommandLineInterface::CommandLineInterface()
-        : prompt_("SAM-0.2: "),
+        : prompt_("SAM-0.3: "),
           command_stream_(),
           manager_()
 {
@@ -67,7 +67,9 @@ bool CommandLineInterface::ParseAndRunCommand()
     {
         if (legal_command.first == command)
         {
+            std::cout << std::endl;
             legal_command.second(*this);
+            std::cout << std::endl;
             return false;
         }
     }
@@ -131,10 +133,13 @@ void CommandLineInterface::ShowStudent()
         if (stu_iter != manager_.student_end())
         {
             cout << Student::Heading() << std::endl
+                 << std::string(Student::HeadingSize(), '-') << std::endl
                  << *stu_iter << std::endl
-                 << "所选课程：\n"
+                 << "\n==================== 所选课程 ====================\n\n"
                  << Course::Heading() << ' '
-                 << std::setw(kScoreWidth + 2) << "分数" << std::endl;
+                 << std::setw(kScoreWidth + 2) << "分数" << std::endl
+                 << std::string(Course::HeadingSize() + 1 + kScoreWidth, '-')
+                 << std::endl;
 
             for (const Course::IDType &course_id : stu_iter->courses_taken())
             {
@@ -231,10 +236,13 @@ void CommandLineInterface::ShowCourse()
         if (crs_iter != manager_.course_end())
         {
             cout << Course::Heading() << std::endl
-                      << *crs_iter << std::endl
-                      << "课内学生:\n"
-                      << Student::Heading() << ' '
-                      << std::setw(kScoreWidth + 2) << "分数" << std::endl;
+                 << std::string(Course::HeadingSize(), '-') << std::endl
+                 << *crs_iter << std::endl
+                 << "\n==================== 课内学生 ====================\n\n"
+                 << Student::Heading() << ' '
+                 << std::setw(kScoreWidth + 2) << "分数" << std::endl
+                 << std::string(Student::HeadingSize() + 1 + kScoreWidth, '-')
+                 << std::endl;
 
             for (const ScorePiece &score_piece : crs_iter->final_score())
             {
@@ -252,12 +260,15 @@ void CommandLineInterface::ShowCourse()
 
                     std::exit(EXIT_FAILURE);
                 }
-                cout << *stu_iter << ' '
-                     << std::setw(kScoreWidth)
-                     << (score_piece.score == kInvalidScore ?
-                         "*" :
-                         std::to_string(score_piece.score))
-                     << std::endl;
+                cout << *stu_iter << ' ';
+
+                cout.width(kScoreWidth);
+                if (score_piece.score == kInvalidScore)
+                    cout << '*';
+                else
+                    cout << score_piece.score;
+
+                cout << std::endl;
             }
         }
         else

@@ -52,6 +52,7 @@ class Course
     // accessors
     const CourseInfo & info() const { return info_; }
     const FinalScore & final_score() const { return final_score_; }
+    std::size_t StudentNumber() const { return final_score_.size(); }
     // to get a student list, use final_score()
 
     // mutators
@@ -74,7 +75,7 @@ class Course
     static const int name_width = 12;
     static const int department_width = 16;
     static const int credit_width = 5;
-    static const int capacity_width = 7;
+    static const int capacity_width = 9;
     static const int teacher_name_width = 8;
 
  private:

@@ -106,7 +106,7 @@ std::string Course::Heading()
             << setw(name_width + 3) << "课程名" << ' '
             << setw(department_width + 2) << "院系" << ' '
             << setw(credit_width + 2) << "学分" << ' '
-            << setw(capacity_width + 3) << "课容量" << ' '
+            << setw(capacity_width + 2) << "人数" << ' '
             << setw(teacher_name_width + 2) << "教师";
         heading = oss.str();
         heading_is_valid = true;
@@ -125,7 +125,9 @@ std::ostream & operator<<(std::ostream &os, const Course &course)
     PrintChinese(os, kDepartmentName[info.department],
                  Course::department_width) << ' ';
     os << setw(Course::credit_width) << info.credit << ' '
-       << setw(Course::capacity_width) << info.capacity << ' ';
+       << setw(Course::capacity_width)
+       << (std::to_string(course.StudentNumber()) + '/' +
+           std::to_string(info.capacity)) << ' ';
     PrintChinese(os, info.teacher_name, Course::teacher_name_width);
 
     return os;
