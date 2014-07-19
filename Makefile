@@ -5,7 +5,7 @@ MKDIR = mkdir
 OBJS = obj/analyser.o obj/command_line_interface.o obj/common.o obj/course.o obj/io.o obj/main.o obj/manager.o obj/student.o
 
 bin/SAM: $(OBJS) | bin
-	$(CXX) -o $@ $^ # -lncurses
+	$(CXX) -o $@ $^ -lreadline
 
 obj/analyser.o: src/analyser.cpp src/analyser.h
 	$(CXX) $(CXXFLAGS) -o $@ $<

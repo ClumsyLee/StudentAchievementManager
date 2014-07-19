@@ -1,6 +1,11 @@
+#include <cstdlib>
+
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include "analyser.h"
 #include "command_line_interface.h"
@@ -42,15 +47,13 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
 {
     std::string command;
 
-    std::cout << prompt_;
-    while (std::getline(std::cin, command))
+    while (ReadLine(prompt_, command))
     {
         command_stream_.clear();
         command_stream_.str(command);  // add this line to stream
 
         if (ParseAndRunCommand())
             return 0;
-        std::cout << prompt_;
     }
 
     return 0;
@@ -99,6 +102,7 @@ void CommandLineInterface::AddStudent()
     StudentInfo info;
     if (!MakeStudentInfo(command_stream_.str(), info))
     {
+        // Enter interactive mode
         std::cout << "Fail to construct student info from \""
                   << command_stream_.str() << "\"\n";
     }
@@ -164,11 +168,7 @@ void CommandLineInterface::ShowStudent()
                 cout << *crs_iter << ' ';
 
                 cout.width(kScoreWidth);
-                ScoreType score = crs_iter->GetScore(id);
-                if (score == kInvalidScore)
-                    cout << "*";
-                else
-                    cout << score;
+                PrintScore(cout, crs_iter->GetScore(id));
 
                 cout << std::endl;
             }
@@ -266,10 +266,7 @@ void CommandLineInterface::ShowCourse()
                 cout << *stu_iter << ' ';
 
                 cout.width(kScoreWidth);
-                if (score_piece.score == kInvalidScore)
-                    cout << '*';
-                else
-                    cout << score_piece.score;
+                PrintScore(cout, score_piece.score);
 
                 cout << std::endl;
             }
@@ -373,5 +370,23 @@ void CommandLineInterface::Load()
     else
         std::cout << "Failed to load\n";
 }
+
+
+bool CommandLineInterface::ReadLine(const std::string &prompt,
+                                    std::string &line) const
+{
+    char *line_read = readline(prompt.c_str());
+    if (!line_read)  // EOF
+        return false;
+
+    if (line_read[0] != '\0')
+        add_history(line_read);
+
+    line.assign(line_read);
+    std::free(line_read);
+
+    return true;
+}
+
 
 }  // namespace SAM

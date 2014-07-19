@@ -49,6 +49,8 @@ class CommandLineInterface : public Interface
 
     void PrintHelpInfo() const;
 
+    bool ReadLine(const std::string &prompt, std::string &line) const;
+
     static std::vector<Command> commands_;
 
     std::string prompt_;
