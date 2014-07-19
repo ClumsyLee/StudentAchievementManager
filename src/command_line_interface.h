@@ -50,6 +50,7 @@ class CommandLineInterface : public Interface
     void PrintHelpInfo() const;
 
     bool ReadLine(const std::string &prompt, std::string &line) const;
+    friend char * CommandGenerator(const char *text, int state);
 
     static std::vector<Command> commands_;
 
