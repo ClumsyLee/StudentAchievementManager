@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "analyser.h"
 #include "command_line_interface.h"
 #include "io.h"
 
@@ -22,6 +23,8 @@ std::vector<CommandLineInterface::Command> CommandLineInterface::commands_ = {
 
     {"reg", &CommandLineInterface::RegisterToCourse},
     {"drop", &CommandLineInterface::DropFromCourse},
+
+    {"gen-stu", &CommandLineInterface::GenerateTranscript},
 
     {"save", &CommandLineInterface::Save},
     {"load", &CommandLineInterface::Load}
@@ -135,7 +138,7 @@ void CommandLineInterface::ShowStudent()
             cout << Student::Heading() << std::endl
                  << std::string(Student::HeadingSize(), '-') << std::endl
                  << *stu_iter << std::endl
-                 << "\n==================== 所选课程 ====================\n\n"
+                 << "\n所选课程:\n\n"
                  << Course::Heading() << ' '
                  << std::setw(kScoreWidth + 2) << "分数" << std::endl
                  << std::string(Course::HeadingSize() + 1 + kScoreWidth, '-')
@@ -238,7 +241,7 @@ void CommandLineInterface::ShowCourse()
             cout << Course::Heading() << std::endl
                  << std::string(Course::HeadingSize(), '-') << std::endl
                  << *crs_iter << std::endl
-                 << "\n==================== 课内学生 ====================\n\n"
+                 << "\n课内学生:\n\n"
                  << Student::Heading() << ' '
                  << std::setw(kScoreWidth + 2) << "分数" << std::endl
                  << std::string(Student::HeadingSize() + 1 + kScoreWidth, '-')
@@ -322,6 +325,31 @@ void CommandLineInterface::DropFromCourse()
     {
         std::cout << "Syntax error\n"
                   << "Usage: drop <student ID> <course ID>\n";
+    }
+}
+
+void CommandLineInterface::GenerateTranscript()
+{
+    Student::IDType student_id;
+
+    if (command_stream_ >> student_id)
+    {
+        Transcript transcript;
+        Analyser analyser;
+
+        if (!analyser.GenerateTranscript(manager_, student_id, transcript))
+        {
+            std::cout << "Failed to generate transcript\n";
+        }
+        else
+        {
+            std::cout << transcript;
+        }
+    }
+    else
+    {
+        std::cout << "Syntax error\n"
+                  << "Usage: gen-stu <student ID>\n";
     }
 }
 

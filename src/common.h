@@ -28,8 +28,6 @@ struct CourseInfo
     std::string teacher_name;
 };
 
-bool MakeCourseInfo(const std::string &str, CourseInfo &info);
-std::string to_string(const CourseInfo &info);
 
 struct StudentInfo
 {
@@ -41,11 +39,6 @@ struct StudentInfo
     int department;
 };
 
-bool MakeStudentInfo(const std::string &str, StudentInfo &info);
-std::string to_string(const StudentInfo &info);
-
-std::ostream & PrintChinese(std::ostream &os, const std::string &str,
-                            std::size_t width);
 
 
 typedef float ScoreType;
@@ -58,6 +51,15 @@ struct ScorePiece
 };
 
 typedef std::vector<ScorePiece> FinalScore;
+
+bool MakeCourseInfo(const std::string &str, CourseInfo &info);
+std::string to_string(const CourseInfo &info);
+bool MakeStudentInfo(const std::string &str, StudentInfo &info);
+std::string to_string(const StudentInfo &info);
+
+std::ostream & PrintChinese(std::ostream &os, const std::string &str,
+                            std::size_t width);
+std::ostream & PrintScore(std::ostream &os, ScoreType score);
 
 }  // namespace SAM
 

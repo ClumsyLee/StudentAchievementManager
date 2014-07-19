@@ -1,5 +1,6 @@
 // Designed to used in THU
 #include <limits>
+#include <iomanip>
 #include "analyser.h"
 
 namespace SAM {
@@ -43,7 +44,57 @@ CourseIDInfo::operator CourseInfo::IDType() const
 
 std::ostream & operator<<(std::ostream &os, const Transcript &transcript)
 {
-    os << "姓名：" << transcript.student_info.name;
+    using std::endl;
+    const StudentInfo &info = transcript.student_info;
+
+    os <<
+"                               清华大学学生成绩单                               \n"
+"\n"
+"姓名：" << info.name << "\n"
+"学号：" << info.id << "\n"
+"性别：" << (info.is_male ? "男": "女") << "\n"
+"院系：" << kDepartmentName[info.department] << "\n"
+"\n"
+" 课程号    学期               课程名              学分  最低/成绩/最高  排名  \n"
+"================================================================================\n";
+
+    for (const TranscriptEntry &entry : transcript.final_scores)
+    {
+        using std::setw;
+        using std::to_string;
+
+        os << std::left;
+
+        CourseIDInfo course_id_info(entry.course_info.id);
+        os << setw(8) << course_id_info.id << "  "
+           << setw(4) << course_id_info.year
+           << CourseIDInfo::kSeasonStr[course_id_info.season] << "  ";
+
+        PrintChinese(os, entry.course_info.name, 30) << "  "
+
+           << setw(4) << entry.course_info.credit << "  ";
+
+        os.width(4);
+        PrintScore(os, entry.min_score) << '/';
+        os.width(4);
+        PrintScore(os, entry.score) << '/';
+        os.width(4);
+        PrintScore(os, entry.max_score) << "  ";
+
+        os << ((entry.rank != 0 ? to_string(entry.rank) : "*")+
+               '/' +
+               to_string(entry.student_num))
+           << endl;
+
+        os << std::right;
+    }
+
+    os <<
+"\n"
+"总学分: " << transcript.total_credit << "\n"
+"GPA: " << transcript.gpa << endl;
+
+    return os;
 }
 
 bool Analyser::GenerateTranscript(const Manager &manager,

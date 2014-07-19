@@ -71,12 +71,12 @@ class Course
     }
 
     // format
-    static const int id_width = 12;
-    static const int name_width = 12;
+    static const int id_width = 15;
+    static const int name_width = 21;
     static const int department_width = 16;
-    static const int credit_width = 5;
-    static const int capacity_width = 9;
-    static const int teacher_name_width = 8;
+    static const int credit_width = 4;
+    static const int capacity_width = 7;
+    static const int teacher_name_width = 6;
 
  private:
     std::pair<FinalScore::const_iterator, FinalScore::const_iterator>

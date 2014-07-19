@@ -101,5 +101,15 @@ std::ostream & PrintChinese(std::ostream &os, const std::string &str,
     return os;
 }
 
+std::ostream & PrintScore(std::ostream &os, ScoreType score)
+{
+    if (score == kInvalidScore)
+        os << '*';
+    else
+        os << score;
+
+    return os;
+}
+
 
 }  // namespace SAM

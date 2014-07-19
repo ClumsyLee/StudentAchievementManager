@@ -42,6 +42,8 @@ class CommandLineInterface : public Interface
     void RegisterToCourse();
     void DropFromCourse();
 
+    void GenerateTranscript();
+
     void Save();
     void Load();
 

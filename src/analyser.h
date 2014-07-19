@@ -54,8 +54,6 @@ class Analyser
  public:
     typedef std::function<bool(const Course &)> CourseFilter;
 
-    Analyser();
-
     bool GenerateTranscript(const Manager &manager,
                             StudentInfo::IDType student_id,
                             Transcript &transcript)
