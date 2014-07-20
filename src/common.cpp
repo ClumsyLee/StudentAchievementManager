@@ -111,5 +111,26 @@ std::ostream & PrintScore(std::ostream &os, ScoreType score)
     return os;
 }
 
+std::ostream & ShowDepartments(std::ostream &os)
+{
+    for (int index = 0; index < kDepartmentNum; index++)
+    {
+        os.width(2);
+        os << index << ": ";
+        os.width(30);
+        os << kDepartmentName[index];
+
+        if (index % 2 == 0)
+            os << "     ";
+        else
+            os << std::endl;
+    }
+    if (kDepartmentNum % 2 == 1)
+        os << std::endl;
+
+    return os;
+}
+
+
 
 }  // namespace SAM

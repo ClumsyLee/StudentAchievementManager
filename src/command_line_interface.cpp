@@ -69,15 +69,10 @@ CommandLineInterface::CommandLineInterface()
 
 int CommandLineInterface::Run(int argc, const char* const argv[])
 {
-    std::string command;
-
     InitializeReadline();
 
-    while (ReadLine(prompt_, command))
+    while (ReadLineIntoStream(prompt_.c_str()))
     {
-        command_stream_.clear();
-        command_stream_.str(command);  // add this line to stream
-
         if (ParseAndRunCommand())
             return 0;
     }
@@ -111,7 +106,7 @@ bool CommandLineInterface::ParseAndRunCommand()
 }
 
 
-void CommandLineInterface::ListStudents()
+void CommandLineInterface::ListStudents() const
 {
     std::cout << Student::Heading() << std::endl
               << std::string(Student::HeadingSize(), '-') << std::endl;
@@ -126,92 +121,88 @@ void CommandLineInterface::ListStudents()
 void CommandLineInterface::AddStudent()
 {
     StudentInfo info;
-    if (!MakeStudentInfo(command_stream_.str(), info))
+
+    if (interactive_mode)
     {
-        // Enter interactive mode
-        std::cout << "Fail to construct student info from \""
-                  << command_stream_.str() << "\"\n";
+        if (!GetStudentInfo(info))
+            return;
     }
-    else if (!manager_.AddStudent(info))
+    else  // noninteractive
     {
-        std::cout << "Fail to add student: ID " << info.id
-                  << " has been occupied\n";
+        if (!MakeStudentInfo(command_stream_.str(), info))
+        {
+            std::cout << "Fail to construct student info from \""
+                      << command_stream_.str() << "\"\n";
+            return;
+        }
+    }
+
+    if (!manager_.AddStudent(info))
+    {
+        std::cout << "无法添加新学生: ID " << info.id
+                  << " 已经被占用\n";
     }
 }
 
 void CommandLineInterface::RemoveStudent()
 {
     StudentInfo::IDType id;
-    if (command_stream_ >> id)
-    {
-        if (!manager_.RemoveStudent(id))
-            std::cout << "Fail to remove student: no student with ID "
-                      << id << std::endl;
-    }
-    else
-    {
-        std::cout << "Syntax error\n"
-                  << "Usage: rm-stu <ID>\n";
-    }
+
+    if (!GetStudentID("请输入要移除的学生的ID: ", id, true))
+        return;
+
+    if (!manager_.RemoveStudent(id))
+        std::cerr << "Internal Error\n";
 }
 
-void CommandLineInterface::ShowStudent()
+void CommandLineInterface::ShowStudent() const
 {
     using std::cout;
 
     StudentInfo::IDType id;
-    if (command_stream_ >> id)
+
+    if (!GetStudentID("请输入要展示的学生的ID: ", id, true))
+        return;
+
+
+    auto stu_iter = manager_.FindStudent(id);
+    if (stu_iter != manager_.student_end())
     {
-        auto stu_iter = manager_.FindStudent(id);
-        if (stu_iter != manager_.student_end())
-        {
-            cout << Student::Heading() << std::endl
-                 << std::string(Student::HeadingSize(), '-') << std::endl
-                 << *stu_iter << std::endl
-                 << "\n所选课程:\n\n"
-                 << Course::Heading() << ' '
-                 << std::setw(kScoreWidth + 2) << "分数" << std::endl
-                 << std::string(Course::HeadingSize() + 1 + kScoreWidth, '-')
-                 << std::endl;
+        cout << Student::Heading() << std::endl
+             << std::string(Student::HeadingSize(), '-') << std::endl
+             << *stu_iter << std::endl
+             << "\n所选课程:\n\n"
+             << Course::Heading() << ' '
+             << std::setw(kScoreWidth + 2) << "分数" << std::endl
+             << std::string(Course::HeadingSize() + 1 + kScoreWidth, '-')
+             << std::endl;
 
-            for (const Course::IDType &course_id : stu_iter->courses_taken())
+        for (const Course::IDType &course_id : stu_iter->courses_taken())
+        {
+            auto crs_iter = manager_.FindCourse(course_id);
+            if (crs_iter == manager_.course_end())
             {
-                auto crs_iter = manager_.FindCourse(course_id);
-                if (crs_iter == manager_.course_end())
-                {
-                    cout << "ERROR: Failed to find a course that should "
-                                 "exist\n"
-                                 "Student ID: " << id << "\n"
-                                 "Course fail: " << course_id << "\n"
-                                 "Students now:\n";
-                    ListStudents();
-                    cout << "Courses now:\n";
-                    ListCourses();
-
-                    std::exit(EXIT_FAILURE);
-                }
-
-                cout << *crs_iter << ' ';
-
-                cout.width(kScoreWidth);
-                PrintScore(cout, crs_iter->GetScore(id));
-
-                cout << std::endl;
+                std::cerr << "Internal Error\n";
+                return;
             }
-        }
-        else
-        {
-            std::cout << "No student with ID " << id << std::endl;
+
+            cout << *crs_iter << ' ';
+
+            // add score info to the end
+            cout.width(kScoreWidth);
+            PrintScore(cout, crs_iter->GetScore(id));
+
+            cout << std::endl;
         }
     }
     else
     {
-        std::cout << "Syntax error\n"
-                  << "Usage: stu <ID>\n";
+        std::cerr << "Internal Error\n";
+        return;
     }
 }
 
-void CommandLineInterface::ListCourses()
+void CommandLineInterface::ListCourses() const
 {
     std::cout << Course::Heading() << std::endl
               << std::string(Course::HeadingSize(), '-') << std::endl;
@@ -226,86 +217,79 @@ void CommandLineInterface::ListCourses()
 void CommandLineInterface::AddCourse()
 {
     CourseInfo info;
-    if (!MakeCourseInfo(command_stream_.str(), info))
+
+    if (interactive_mode)
     {
-        std::cout << "Fail to construct course info from \""
-                  << command_stream_.str() << "\"\n";
+        if (!GetCourseInfo(info))
+            return;
     }
-    else if (!manager_.AddCourse(info))
+    else  // noninteractive
     {
-        std::cout << "Fail to add course: ID " << info.id
-                  << " has been occupied\n";
+        if (!MakeCourseInfo(command_stream_.str(), info))
+        {
+            std::cout << "Fail to construct course info from \""
+                      << command_stream_.str() << "\"\n";
+            return;
+        }
+    }
+
+    if (!manager_.AddCourse(info))
+    {
+        std::cout << "无法添加新课程: ID " << info.id << " 已经被占用\n";
     }
 }
 
 void CommandLineInterface::RemoveCourse()
 {
     CourseInfo::IDType id;
-    if (command_stream_ >> id)
-    {
-        if (!manager_.RemoveCourse(id))
-            std::cout << "Fail to remove course: no course with ID "
-                      << id << std::endl;
-    }
-    else
-    {
-        std::cout << "Syntax error\n"
-                  << "Usage: rm-crs <ID>\n";
-    }
+
+    if (!GetCourseID("请输入要移除的课程的ID: ", id, true))
+        return;
+
+    if (!manager_.RemoveCourse(id))
+        std::cerr << "Internal Error\n";
 }
 
-void CommandLineInterface::ShowCourse()
+void CommandLineInterface::ShowCourse() const
 {
     using std::cout;
 
     CourseInfo::IDType id;
-    if (command_stream_ >> id)
+
+    if (!GetCourseID("请输入要展示的课程的ID: ", id, true))
+        return;
+
+    auto crs_iter = manager_.FindCourse(id);
+    if (crs_iter != manager_.course_end())
     {
-        auto crs_iter = manager_.FindCourse(id);
-        if (crs_iter != manager_.course_end())
-        {
-            cout << Course::Heading() << std::endl
-                 << std::string(Course::HeadingSize(), '-') << std::endl
-                 << *crs_iter << std::endl
-                 << "\n课内学生:\n\n"
-                 << Student::Heading() << ' '
-                 << std::setw(kScoreWidth + 2) << "分数" << std::endl
-                 << std::string(Student::HeadingSize() + 1 + kScoreWidth, '-')
-                 << std::endl;
+        cout << Course::Heading() << std::endl
+             << std::string(Course::HeadingSize(), '-') << std::endl
+             << *crs_iter << std::endl
+             << "\n课内学生:\n\n"
+             << Student::Heading() << ' '
+             << std::setw(kScoreWidth + 2) << "分数" << std::endl
+             << std::string(Student::HeadingSize() + 1 + kScoreWidth, '-')
+             << std::endl;
 
-            for (const ScorePiece &score_piece : crs_iter->final_score())
+        for (const ScorePiece &score_piece : crs_iter->final_score())
+        {
+            auto stu_iter = manager_.FindStudent(score_piece.id);
+            if (stu_iter == manager_.student_end())
             {
-                auto stu_iter = manager_.FindStudent(score_piece.id);
-                if (stu_iter == manager_.student_end())
-                {
-                    cout << "ERROR: Failed to find a student that should "
-                                 "exist\n"
-                                 "Course ID: " << id << "\n"
-                                 "Student fail: " << score_piece.id << "\n"
-                                 "Students now:\n";
-                    ListStudents();
-                    cout << "Courses now:\n";
-                    ListCourses();
-
-                    std::exit(EXIT_FAILURE);
-                }
-                cout << *stu_iter << ' ';
-
-                cout.width(kScoreWidth);
-                PrintScore(cout, score_piece.score);
-
-                cout << std::endl;
+                std::cerr << "Internal Error\n";
+                return;
             }
-        }
-        else
-        {
-            cout << "No course with ID " << id << std::endl;
+            cout << *stu_iter << ' ';
+
+            cout.width(kScoreWidth);
+            PrintScore(cout, score_piece.score);
+
+            cout << std::endl;
         }
     }
     else
     {
-        cout << "Syntax error\n"
-             << "Usage: crs <ID>\n";
+        std::cerr << "Internal Error\n";
     }
 }
 
@@ -314,19 +298,15 @@ void CommandLineInterface::RegisterToCourse()
     Student::IDType student_id;
     Course::IDType course_id;
 
-    if (command_stream_ >> student_id >> course_id)
+    if (!GetStudentID("请输入要注册的学生的ID: ", student_id, true) ||
+        !GetCourseID("请输入该学生要注册的课程的ID: ", course_id, true))
+        return;
+
+    if (!manager_.AddStudentToCourse(student_id, course_id))
     {
-        if (!manager_.AddStudentToCourse(student_id, course_id))
-        {
-            std::cout << "Fail to register student " << student_id << " to "
-                         "course " << course_id << "\n"
-                         "Check the student and the course for more info\n";
-        }
-    }
-    else
-    {
-        std::cout << "Syntax error\n"
-                  << "Usage: register <student ID> <course ID>\n";
+        std::cout << "无法将ID为 " << student_id << " 的学生注册到ID为 "
+                  << course_id << " 的课程中\n"
+                     "可能原因: 课程人数已满\n";
     }
 }
 
@@ -335,23 +315,40 @@ void CommandLineInterface::DropFromCourse()
     Student::IDType student_id;
     Course::IDType course_id;
 
-    if (command_stream_ >> student_id >> course_id)
+    if (!GetStudentID("请输入要退课的学生的ID: ", student_id, true) ||
+        !GetCourseID("请输入该学生要退出的课程的ID: ", course_id, true))
+        return;
+
+    if (!manager_.RemoveStudentFromCourse(student_id, course_id))
     {
-        if (!manager_.RemoveStudentFromCourse(student_id, course_id))
-        {
-            std::cout << "Fail to drop student " << student_id << " from "
-                         "course " << course_id << "\n"
-                         "Check the student and the course for more info\n";
-        }
-    }
-    else
-    {
-        std::cout << "Syntax error\n"
-                  << "Usage: drop <student ID> <course ID>\n";
+        std::cout << "无法将ID为 " << student_id << " 的学生从ID为 "
+                  << course_id << "的课程中退课\n"
+                     "可能原因: 该课程中没有该学生\n";
     }
 }
 
-void CommandLineInterface::GenerateTranscript()
+void CommandLineInterface::RecordFinalScore()
+{
+
+}
+
+void CommandLineInterface::RemoveFinalScore()
+{
+
+}
+void CommandLineInterface::GetScore()
+{
+
+}
+void CommandLineInterface::ChangeScore()
+{
+
+}
+
+
+
+
+void CommandLineInterface::GenerateTranscript() const
 {
     Student::IDType student_id;
 
@@ -397,11 +394,206 @@ void CommandLineInterface::Load()
         std::cout << "Failed to load\n";
 }
 
+bool CommandLineInterface::GetStudentID(const char *prompt,
+                                        Student::IDType &id,
+                                        bool check) const
+{
+    if (interactive_mode)
+    {
+        if (ReadLineIntoStream(prompt))
+            return false;
+    }
 
-bool CommandLineInterface::ReadLine(const std::string &prompt,
+    if (!(command_stream_ >> id))
+    {
+        std::cout << command_stream_.str() << ": 无效的学生ID\n";
+        return false;
+    }
+
+    if (check)  // need to check whether the student is in the manager
+    {
+        if (!manager_.HasStudent(id))
+        {
+            std::cout << "不存在ID为 " << id << " 的学生\n";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool CommandLineInterface::GetCourseID(const char *prompt,
+                                       Course::IDType &id,
+                                       bool check) const
+{
+    if (interactive_mode)
+    {
+        if (ReadLineIntoStream(prompt))
+            return false;
+    }
+
+    if (!(command_stream_ >> id))
+    {
+        std::cout << command_stream_.str() << ": 无效的课程号\n";
+        return false;
+    }
+
+
+    if (check)  // need to check whether the course is in the manager
+    {
+        if (!manager_.HasCourse(id))
+        {
+            std::cout << "不存在课程号为 " << id << " 的课程\n";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool CommandLineInterface::GetStudentInfo(StudentInfo &info) const
+{
+    // name
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入学生ID: "))
+            return false;
+
+        if (!(command_stream_ >> info.id))
+            std::cout << "无效的学生ID\n";
+        else if (manager_.HasStudent(info.id))
+            std::cout << "ID " << info.id << "已经被占用\n";
+        else
+            break;
+    }
+
+    // name
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入学生姓名: "))
+            return false;
+
+        if (!(command_stream_ >> info.name))
+            std::cout << "无效的姓名\n";
+        else
+            break;
+    }
+
+    // is_male
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入学生性别（0代表女，1代表男）: "))
+            return false;
+
+        if (!(command_stream_ >> info.is_male))
+            std::cout << "无效的性别\n";
+        else
+            break;
+    }
+
+    // department
+    ShowDepartments(std::cout);
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入学生的专业编号: "))
+            return false;
+
+        if (!(command_stream_ >> info.department))
+            std::cout << "无效的专业编号\n";
+        else
+            break;
+    }
+
+    return true;
+}
+
+bool CommandLineInterface::GetCourseInfo(CourseInfo &info) const
+{
+    // name
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入课程ID: "))
+            return false;
+
+        if (!(command_stream_ >> info.id))
+            std::cout << "无效的课程ID\n";
+        else if (manager_.HasCourse(info.id))
+            std::cout << "ID " << info.id << "已经被占用\n";
+        else
+            break;
+    }
+
+    // name
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入课程名: "))
+            return false;
+
+        if (!(command_stream_ >> info.name))
+            std::cout << "无效的课程名\n";
+        else
+            break;
+    }
+
+    // department
+    ShowDepartments(std::cout);
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入课程的专业编号: "))
+            return false;
+
+        if (!(command_stream_ >> info.department))
+            std::cout << "无效的专业编号\n";
+        else
+            break;
+    }
+
+    // credit
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入课程学分: "))
+            return false;
+
+        if (!(command_stream_ >> info.credit))
+            std::cout << "无效的学分\n";
+        else
+            break;
+    }
+
+    // capacity
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入课容量: "))
+            return false;
+
+        if (!(command_stream_ >> info.capacity))
+            std::cout << "无效的课容量\n";
+        else
+            break;
+    }
+
+    // teacher name
+    while (true)
+    {
+        if (!ReadLineIntoStream("请输入老师姓名: "))
+            return false;
+
+        if (!(command_stream_ >> info.teacher_name))
+            std::cout << "无效的老师姓名\n";
+        else
+            break;
+    }
+
+    return true;
+}
+
+
+
+bool CommandLineInterface::ReadLine(const char *prompt,
                                     std::string &line) const
 {
-    char *line_read = readline(prompt.c_str());
+    char *line_read = readline(prompt);
     if (!line_read)  // EOF
         return false;
 
@@ -415,6 +607,20 @@ bool CommandLineInterface::ReadLine(const std::string &prompt,
     return true;
 }
 
+bool CommandLineInterface::ReadLineIntoStream(const char *prompt) const
+{
+    std::string line;
+    if (!ReadLine(prompt, line))
+    {
+        return false;
+    }
+    else
+    {
+        command_stream_.clear();
+        command_stream_.str(line);  // add this line to stream
+        return true;
+    }
+}
 
 
 /* Tell the GNU Readline library how to complete.  We want to try to complete

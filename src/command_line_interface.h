@@ -29,33 +29,46 @@ class CommandLineInterface : public Interface
     // return true if need to exit
     bool ParseAndRunCommand();
 
-    void ListStudents();
+    void ListStudents() const;
     void AddStudent();
     void RemoveStudent();
-    void ShowStudent();
+    void ShowStudent() const;
 
-    void ListCourses();
+    void ListCourses() const;
     void AddCourse();
     void RemoveCourse();
-    void ShowCourse();
+    void ShowCourse() const;
 
     void RegisterToCourse();
     void DropFromCourse();
 
-    void GenerateTranscript();
+    void RecordFinalScore();
+    void RemoveFinalScore();
+    void GetScore();
+    void ChangeScore();
+
+    void GenerateTranscript() const;
 
     void Save();
     void Load();
 
     void PrintHelpInfo() const;
 
-    bool ReadLine(const std::string &prompt, std::string &line) const;
+    bool GetStudentID(const char *prompt, Student::IDType &id,
+                      bool check = false) const;
+    bool GetCourseID(const char *prompt, Course::IDType &id,
+                     bool check = false) const;
+    bool GetStudentInfo(StudentInfo &info) const;
+    bool GetCourseInfo(CourseInfo &info) const;
+
+    bool ReadLine(const char *prompt, std::string &line) const;
+    bool ReadLineIntoStream(const char *prompt) const;
     friend char * CommandGenerator(const char *text, int state);
 
     static std::vector<Command> commands_;
 
     std::string prompt_;
-    std::istringstream command_stream_;
+    mutable std::istringstream command_stream_;
     Manager manager_;
 
     bool interactive_mode;

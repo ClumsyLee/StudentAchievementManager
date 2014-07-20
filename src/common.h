@@ -61,6 +61,8 @@ std::ostream & PrintChinese(std::ostream &os, const std::string &str,
                             std::size_t width);
 std::ostream & PrintScore(std::ostream &os, ScoreType score);
 
+std::ostream & ShowDepartments(std::ostream &os);
+
 }  // namespace SAM
 
 #endif  // SAM_COMMON_H_
