@@ -469,10 +469,10 @@ char * CommandGenerator(const char *text, int state)
     static int command_num = commands.size();
 
     /* Return the next name which partially matches from the command list. */
-    while (list_index < command_num - 1)
+    while (list_index < command_num)
     {
-        list_index++;
         const std::string &command_name = commands[list_index].first;
+        list_index++;
 
         if (command_name.compare(0, len, text) == 0)
         {
