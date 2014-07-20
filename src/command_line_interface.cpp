@@ -12,6 +12,23 @@
 #include "command_line_interface.h"
 #include "io.h"
 
+namespace {
+
+void StriptWhite(std::string &str)
+{
+    std::size_t begin = str.find_first_not_of(" \t");
+    std::size_t end = str.find_last_not_of(" \t");
+
+    if (begin == std::string::npos)  // str contains only white
+        str.clear();
+    else
+        str = str.substr(begin, end - begin + 1);
+}
+
+
+}  // namespace
+
+
 namespace SAM {
 
 void InitializeReadline();
@@ -45,7 +62,8 @@ std::vector<CommandLineInterface::Command> CommandLineInterface::commands_ = {
 CommandLineInterface::CommandLineInterface()
         : prompt_("SAM-0.3: "),
           command_stream_(),
-          manager_()
+          manager_(),
+          interactive_mode(true)
 {
 }
 
@@ -387,12 +405,13 @@ bool CommandLineInterface::ReadLine(const std::string &prompt,
     if (!line_read)  // EOF
         return false;
 
-    if (line_read[0] != '\0')
-        add_history(line_read);
-
     line.assign(line_read);
-    std::free(line_read);
 
+    StriptWhite(line);
+    if (!line.empty())
+        add_history(line_read);  // if not empty, add the origin line
+
+    std::free(line_read);
     return true;
 }
 

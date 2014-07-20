@@ -57,6 +57,8 @@ class CommandLineInterface : public Interface
     std::string prompt_;
     std::istringstream command_stream_;
     Manager manager_;
+
+    bool interactive_mode;
 };
 
 }  // namespace SAM
