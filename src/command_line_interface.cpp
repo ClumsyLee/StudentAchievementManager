@@ -69,12 +69,84 @@ CommandLineInterface::CommandLineInterface()
 
 int CommandLineInterface::Run(int argc, const char* const argv[])
 {
-    InitializeReadline();
-
-    while (ReadLineIntoStream(prompt_.c_str()))
+    if (argc >= 2 && std::strcmp(argv[1], "-no-interact") == 0)
     {
-        if (ParseAndRunCommand())
-            return 0;
+        interactive_mode = false;
+        InitializeReadline();
+
+        while (ReadLineIntoStream(prompt_.c_str()))
+        {
+            if (ParseAndRunCommand())
+                return 0;
+        }
+    }
+    else  // interactive mode
+    {
+        using std::cout;
+
+        Load();
+        while (true)
+        {
+            cout << "请选择你要进行的操作\n"
+                    "1. 管理学生               2.管理课程\n"
+                    "3. 退出\n";
+            int choice;
+            if (!GetMenuChoice(3, choice) || choice == 3)
+                break;
+
+            switch (choice)
+            {
+                case 1:
+                {
+                    while (true)
+                    {
+                        cout << "\n请选择你要对学生进行的操作\n"
+                                "1. 显示学生列表            2. 添加学生\n"
+                                "3. 移除学生                4. 查询特定学生\n"
+                                "5. 将学生注册到课程        6. 退课\n"
+                                "7. 生成学生成绩单          8. 返回上级菜单\n";
+                        int choice;
+                        if (!GetMenuChoice(8, choice) || choice == 8)
+                            break;
+
+                        switch (choice)
+                        {
+                            case 1: ListStudents(); break;
+                            case 2: AddStudent(); break;
+                            case 3: RemoveStudent(); break;
+                            case 4: ShowStudent(); break;
+                            case 5: RegisterToCourse(); break;
+                            case 6: DropFromCourse(); break;
+                            case 7: GenerateTranscript(); break;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (true)
+                    {
+                        cout << "\n请选择你要对课程进行的操作\n"
+                                "1. 显示课程列表            2. 添加课程"
+                                "3. 移除课程                4. 查询特定课程\n"
+                                "5. 退出\n";
+                        int choice;
+                        if (!GetMenuChoice(5, choice) || choice == 5)
+                            break;
+
+                        switch (choice)
+                        {
+                            case 1: ListCourses(); break;
+                            case 2: AddCourse(); break;
+                            case 3: RemoveCourse(); break;
+                            case 4: ShowCourse(); break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        Save();
     }
 
     return 0;
@@ -352,24 +424,20 @@ void CommandLineInterface::GenerateTranscript() const
 {
     Student::IDType student_id;
 
-    if (command_stream_ >> student_id)
-    {
-        Transcript transcript;
-        Analyser analyser;
+    if (!GetStudentID("请输入要生成成绩单的学生的ID: ", student_id, true))
+        return;
 
-        if (!analyser.GenerateTranscript(manager_, student_id, transcript))
-        {
-            std::cout << "Failed to generate transcript\n";
-        }
-        else
-        {
-            std::cout << transcript;
-        }
+
+    Transcript transcript;
+    Analyser analyser;
+
+    if (!analyser.GenerateTranscript(manager_, student_id, transcript))
+    {
+        std::cout << "Failed to generate transcript\n";
     }
     else
     {
-        std::cout << "Syntax error\n"
-                  << "Usage: gen-stu <student ID>\n";
+        std::cout << transcript;
     }
 }
 
@@ -400,7 +468,7 @@ bool CommandLineInterface::GetStudentID(const char *prompt,
 {
     if (interactive_mode)
     {
-        if (ReadLineIntoStream(prompt))
+        if (!ReadLineIntoStream(prompt))
             return false;
     }
 
@@ -428,7 +496,7 @@ bool CommandLineInterface::GetCourseID(const char *prompt,
 {
     if (interactive_mode)
     {
-        if (ReadLineIntoStream(prompt))
+        if (!ReadLineIntoStream(prompt))
             return false;
     }
 
@@ -588,6 +656,20 @@ bool CommandLineInterface::GetCourseInfo(CourseInfo &info) const
     return true;
 }
 
+bool CommandLineInterface::GetMenuChoice(int max_number, int &choice)
+{
+    if (!ReadLineIntoStream(NULL))
+        return false;
+
+    while (!(command_stream_ >> choice) || choice < 1 || choice >max_number)
+    {
+        std::string prompt("请输入不超过" + std::to_string(max_number) +
+                           "的正整数: ");
+        if (!ReadLineIntoStream(prompt.c_str()))
+            return false;
+    }
+    return true;
+}
 
 
 bool CommandLineInterface::ReadLine(const char *prompt,

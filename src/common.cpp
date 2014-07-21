@@ -117,8 +117,7 @@ std::ostream & ShowDepartments(std::ostream &os)
     {
         os.width(2);
         os << index << ": ";
-        os.width(30);
-        os << kDepartmentName[index];
+        PrintChinese(os, kDepartmentName[index], 30);
 
         if (index % 2 == 0)
             os << "     ";

@@ -61,6 +61,8 @@ class CommandLineInterface : public Interface
     bool GetStudentInfo(StudentInfo &info) const;
     bool GetCourseInfo(CourseInfo &info) const;
 
+    bool GetMenuChoice(int max_number, int &choice);
+
     bool ReadLine(const char *prompt, std::string &line) const;
     bool ReadLineIntoStream(const char *prompt) const;
     friend char * CommandGenerator(const char *text, int state);
