@@ -73,6 +73,10 @@ class CommandLineInterface : public Interface
 
     bool GetMenuChoice(int max_number, int &choice);
     bool GetYesNoChoice(const char *prompt) const;
+    bool GetYesNoChoice(const std::string &prompt) const
+    {
+        return GetYesNoChoice(prompt.c_str());
+    }
 
     bool ReadLine(const char *prompt, std::string &line) const;
     bool ReadLineIntoStream(const char *prompt) const;

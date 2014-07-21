@@ -65,7 +65,7 @@ std::vector<CommandLineInterface::Command> CommandLineInterface::commands_ = {
 
 
 CommandLineInterface::CommandLineInterface()
-        : prompt_("SAM-0.3: "),
+        : prompt_("SAM-0.5: "),
           command_stream_(),
           manager_(),
           interactive_mode(true)
@@ -90,11 +90,17 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
         using std::cout;
 
         Load();
+        cout <<
+"                         欢迎进入SAM学生成绩管理系统\n"
+"                              当前版本号: 0.5\n";
+
         while (true)
         {
-            cout << "\n请选择你要进行的操作\n"
-                    "1. 管理学生               2.管理课程\n"
-                    "3. 退出\n";
+            cout << "\n"
+" ========================= 请选择您要进行的操作 ========================== \n"
+"                  1. 管理学生               2.管理课程\n"
+"                  3. 退出\n"
+" ========================================================================= \n";
             int choice;
             if (!GetMenuChoice(3, choice) || choice == 3)
                 break;
@@ -105,12 +111,14 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
                 {
                     while (true)
                     {
-                        cout << "\n请选择你要对学生进行的操作\n"
-                                "1. 显示学生列表            2. 添加学生\n"
-                                "3. 移除学生                4. 查询特定学生\n"
-                                "5. 将学生注册到课程        6. 退课\n"
-                                "7. 生成学生成绩单          8. 修改分数\n"
-                                "9. 返回上级菜单\n";
+                        cout << "\n"
+" ====================== 请选择你要对学生进行的操作 ======================= \n"
+"                  1. 显示学生列表            2. 添加学生\n"
+"                  3. 移除学生                4. 查询特定学生\n"
+"                  5. 将学生注册到课程        6. 退课\n"
+"                  7. 生成学生成绩单          8. 修改分数\n"
+"                  9. 返回上级菜单\n"
+" ========================================================================= \n";
                         int choice;
                         if (!GetMenuChoice(9, choice) || choice == 9)
                             break;
@@ -133,12 +141,14 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
                 {
                     while (true)
                     {
-                        cout << "\n请选择你要对课程进行的操作\n"
-                                "1. 显示课程列表            2. 添加课程\n"
-                                "3. 移除课程                4. 查询特定课程\n"
-                                "5. 记录期末成绩            6. 移除期末成绩\n"
-                                "7. 返回上级菜单\n";
-                        int choice;
+                        cout << "\n"
+" ====================== 请选择你要对课程进行的操作 ======================= \n"
+"                  1. 显示课程列表            2. 添加课程\n"
+"                  3. 移除课程                4. 查询特定课程\n"
+"                  5. 记录期末成绩            6. 移除期末成绩\n"
+"                  7. 返回上级菜单\n"
+" ========================================================================= \n";
+             int choice;
                         if (!GetMenuChoice(7, choice) || choice == 7)
                             break;
 
@@ -219,7 +229,12 @@ void CommandLineInterface::AddStudent()
         }
     }
 
-    if (!manager_.AddStudent(info))
+    std::cout << "\n您输入的信息为:\n"
+              << Student::Heading() << std::endl
+              << Student(info) << std::endl;
+
+    std::string prompt("确定要添加该学生吗? (y/n): ");
+    if (GetYesNoChoice(prompt) && !manager_.AddStudent(info))
     {
         std::cout << "无法添加新学生: ID " << info.id
                   << " 已经被占用\n";
@@ -233,7 +248,8 @@ void CommandLineInterface::RemoveStudent()
     if (!GetStudentID("请输入要移除的学生的ID: ", id, true))
         return;
 
-    if (!manager_.RemoveStudent(id))
+    std::string prompt("确定要移除学生 " + ShortStudentInfo(id) + " 吗? (y/n): ");
+    if (GetYesNoChoice(prompt) && !manager_.RemoveStudent(id))
         std::cerr << "Internal Error\n";
 }
 
@@ -315,7 +331,12 @@ void CommandLineInterface::AddCourse()
         }
     }
 
-    if (!manager_.AddCourse(info))
+    std::cout << "您输入的信息为:\n"
+              << Course::Heading() << std::endl
+              << Course(info) << std::endl;
+
+    std::string prompt("确定要添加该课程吗? (y/n): ");
+    if (GetYesNoChoice(prompt) && !manager_.AddCourse(info))
     {
         std::cout << "无法添加新课程: ID " << info.id << " 已经被占用\n";
     }
@@ -328,7 +349,8 @@ void CommandLineInterface::RemoveCourse()
     if (!GetCourseID("请输入要移除的课程的ID: ", id, true))
         return;
 
-    if (!manager_.RemoveCourse(id))
+    std::string prompt("确定要移除课程 " + ShortCourseInfo(id) + " 吗? (y/n): ");
+    if (GetYesNoChoice(prompt) && !manager_.RemoveCourse(id))
         std::cerr << "Internal Error\n";
 }
 
@@ -384,7 +406,9 @@ void CommandLineInterface::RegisterToCourse()
         !GetCourseID("请输入该学生要注册的课程的ID: ", course_id, true))
         return;
 
-    if (!manager_.AddStudentToCourse(student_id, course_id))
+    std::string prompt("确定要将 " + ShortStudentInfo(student_id) + " 注册到 " +
+                       ShortCourseInfo(course_id) + " 中吗? (y/n): ");
+    if (GetYesNoChoice(prompt) && !manager_.AddStudentToCourse(student_id, course_id))
     {
         std::cout << "无法将ID为 " << student_id << " 的学生注册到ID为 "
                   << course_id << " 的课程中\n"
@@ -401,7 +425,10 @@ void CommandLineInterface::DropFromCourse()
         !GetCourseID("请输入该学生要退出的课程的ID: ", course_id, true))
         return;
 
-    if (!manager_.RemoveStudentFromCourse(student_id, course_id))
+    std::string prompt("确定要将 " + ShortStudentInfo(student_id) + " 从 " +
+                       ShortCourseInfo(course_id) + " 退课吗? (y/n): ");
+    if (GetYesNoChoice(prompt) &&
+        !manager_.RemoveStudentFromCourse(student_id, course_id))
     {
         std::cout << "无法将ID为 " << student_id << " 的学生从ID为 "
                   << course_id << "的课程中退课\n"
@@ -418,7 +445,7 @@ void CommandLineInterface::RecordFinalScore()
 
     if (interactive_mode)
     {
-        ReadLineIntoStream("请输入要录的成绩文件的文件名（空行以跳过）: ");
+        ReadLineIntoStream("请输入要录入的成绩文件的文件名（空行以跳过）: ");
     }
     std::string filename = command_stream_.str();
 
@@ -457,7 +484,7 @@ void CommandLineInterface::RemoveFinalScore()
 
     std::string prompt = "确定要移除 " + ShortCourseInfo(course_id) +
                          " 的期末成绩吗 (y/n): ";
-    if (GetYesNoChoice(prompt.c_str()))
+    if (GetYesNoChoice(prompt))
         manager_.RemoveFinalScore(course_id);
 }
 
@@ -516,9 +543,7 @@ void CommandLineInterface::Save()
 {
     ManagerWriter writer;
 
-    if (writer.Write("students.dat", "courses.dat", manager_))
-        std::cout << "Saved\n";
-    else
+    if (!writer.Write("students.dat", "courses.dat", manager_))
         std::cout << "Failed to save\n";
 }
 
@@ -527,9 +552,7 @@ void CommandLineInterface::Load()
 {
     ManagerReader reader;
 
-    if (reader.Read("students.dat", "courses.dat", manager_))
-        std::cout << "Loaded\n";
-    else
+    if (!reader.Read("students.dat", "courses.dat", manager_))
         std::cout << "Failed to load\n";
 }
 
