@@ -59,8 +59,7 @@ bool ManagerReader::ReadFinalScore(
         return false;
 
     std::ifstream fin(file_name);
-    if (!fin.is_open())
-        return false;
+    // if cannot open the file, just continue recording, and return false
 
     ScorePiece score_piece;
     FinalScore final_score;
@@ -71,6 +70,11 @@ bool ManagerReader::ReadFinalScore(
     }
 
     manager.RecordFinalScore(course_id, final_score, unscored_students);
+
+    if (!fin.is_open())
+    {
+        return false;
+    }
 
     return true;
 }

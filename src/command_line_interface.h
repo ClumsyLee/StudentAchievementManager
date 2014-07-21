@@ -44,7 +44,6 @@ class CommandLineInterface : public Interface
 
     void RecordFinalScore();
     void RemoveFinalScore();
-    void GetScore();
     void ChangeScore();
 
     void GenerateTranscript() const;
@@ -54,6 +53,17 @@ class CommandLineInterface : public Interface
 
     void PrintHelpInfo() const;
 
+    std::string ShortStudentInfo(Student::IDType id) const
+    {
+        return manager_.FindStudent(id)->info().name +
+                    '(' + std::to_string(id) + ')';
+    }
+    std::string ShortCourseInfo(const Course::IDType &id) const
+    {
+        return manager_.FindCourse(id)->info().name +
+                    '(' + id + ')';
+    }
+
     bool GetStudentID(const char *prompt, Student::IDType &id,
                       bool check = false) const;
     bool GetCourseID(const char *prompt, Course::IDType &id,
@@ -62,6 +72,7 @@ class CommandLineInterface : public Interface
     bool GetCourseInfo(CourseInfo &info) const;
 
     bool GetMenuChoice(int max_number, int &choice);
+    bool GetYesNoChoice(const char *prompt) const;
 
     bool ReadLine(const char *prompt, std::string &line) const;
     bool ReadLineIntoStream(const char *prompt) const;
