@@ -6,8 +6,16 @@
 #include <iostream>
 #include <sstream>
 
+#if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
+
+#ifndef UNIX_LIKE_SYS
+#define UNIX_LIKE_SYS
+#endif
+
 #include <readline/readline.h>
 #include <readline/history.h>
+
+#endif
 
 #include "analyser.h"
 #include "command_line_interface.h"
@@ -32,10 +40,11 @@ void StriptWhite(std::string &str)
 
 namespace SAM {
 
+#ifdef UNIX_LIKE_SYS
 void InitializeReadline();
 char ** CommandCompletion(const char *text, int start, int end);
 char * CommandGenerator(const char *text, int state);
-
+#endif
 
 static const int kScoreWidth = 5;
 
@@ -65,7 +74,7 @@ std::vector<CommandLineInterface::Command> CommandLineInterface::commands_ = {
 
 
 CommandLineInterface::CommandLineInterface()
-        : prompt_("SAM-0.5: "),
+        : prompt_("SAM-1.0: "),
           command_stream_(),
           manager_(),
           interactive_mode(true)
@@ -77,7 +86,10 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
     if (argc >= 2 && std::strcmp(argv[1], "-no-interact") == 0)
     {
         interactive_mode = false;
+
+#ifdef UNIX_LIKE_SYS
         InitializeReadline();
+#endif
 
         while (ReadLineIntoStream(prompt_.c_str()))
         {
@@ -92,7 +104,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[])
         Load();
         cout <<
 "                         欢迎进入SAM学生成绩管理系统\n"
-"                              当前版本号: 0.5\n";
+"                              当前版本号: 1.0\n";
 
         while (true)
         {
@@ -817,6 +829,8 @@ bool CommandLineInterface::ReadLineIntoStream(const char *prompt) const
 }
 
 
+#ifdef UNIX_LIKE_SYS
+
 /* Tell the GNU Readline library how to complete.  We want to try to complete
    on command names if this is the first word in the line, or on filenames
    if not. */
@@ -886,6 +900,7 @@ char * CommandGenerator(const char *text, int state)
     return NULL;
 }
 
+#endif
 
 
 }  // namespace SAM
